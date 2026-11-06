@@ -1,0 +1,51 @@
+[Unit]
+Description=ronda: website uptime monitor
+Documentation=file:///usr/local/share/doc/ronda/README.md
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=ronda
+Group=ronda
+ExecStart=/usr/local/bin/ronda run -config /etc/ronda/config.json
+Restart=always
+RestartSec=3
+
+# Where it may write: its own state directory and nothing else.
+StateDirectory=ronda
+StateDirectoryMode=0750
+UMask=0077
+
+# Hardening. ronda only needs to open outgoing connections and listen on one port.
+NoNewPrivileges=true
+CapabilityBoundingSet=
+AmbientCapabilities=
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
+ProtectControlGroups=true
+ProtectClock=true
+ProtectHostname=true
+LockPersonality=true
+RestrictRealtime=true
+RestrictSUIDSGID=true
+RestrictNamespaces=true
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+SystemCallErrorNumber=EPERM
+
+# A monitor that eats the server it runs on defeats the purpose.
+MemoryMax=256M
+# Make the Go runtime collect harder as it nears the cgroup limit, instead of being killed at it.
+Environment=GOMEMLIMIT=192MiB
+TasksMax=256
+LimitNOFILE=4096
+
+[Install]
+WantedBy=multi-user.target

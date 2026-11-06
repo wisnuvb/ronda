@@ -1,0 +1,48 @@
+{
+  "listen": "127.0.0.1:9191",
+  "data_dir": "/var/lib/ronda",
+  "timezone": "UTC",
+  "language": "en",
+  "trust_proxy": false,
+  "api": {
+    "token": ""
+  },
+  "auth": {
+    "user": "admin",
+    "password_hash": ""
+  },
+  "notify": {
+    "telegram_token": "",
+    "telegram_chat_id": "",
+    "webhook_url": "",
+    "telegram_commands": false,
+    "telegram_admin_ids": [],
+    "remind_after_min": [
+      60,
+      360,
+      1440
+    ],
+    "report_daily": "",
+    "report_weekly": "",
+    "report_weekly_day": 1
+  },
+  "status_page": {
+    "enabled": false,
+    "title": "Service status",
+    "description": ""
+  },
+  "cert_warn_days": [
+    14,
+    7,
+    3,
+    1
+  ],
+  "event_retention_days": 365,
+  "heartbeat_url": "",
+  "heartbeat_interval_sec": 60,
+  "control_addrs": [
+    "1.1.1.1:443",
+    "8.8.8.8:443"
+  ],
+  "max_concurrent_checks": 20
+}

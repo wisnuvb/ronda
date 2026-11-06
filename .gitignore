@@ -1,0 +1,6 @@
+bin/
+data/
+dist/
+config.json
+.claude/settings.local.json
+.secrets/

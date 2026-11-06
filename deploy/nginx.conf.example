@@ -1,0 +1,35 @@
+# Reverse proxy for the ronda dashboard. Put it in /etc/nginx/sites-available/ronda, link it into
+# sites-enabled, then: sudo certbot --nginx -d mon.contoh.com   (adds the certificate and the 443 block)
+#
+# Also set  "trust_proxy": true  in /etc/ronda/config.json. That is only safe because every
+# request really arrives through this proxy and ronda listens on 127.0.0.1.
+server {
+    listen 80;
+    server_name mon.contoh.com;
+
+    # Push monitors (cron/backup jobs) call this path without logging in. The token is part of the
+    # URL, so keep it out of the access log.
+    location /ping/ {
+        proxy_pass http://127.0.0.1:9191;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-For $remote_addr;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_read_timeout 15s;
+        access_log off;
+    }
+
+    location / {
+        proxy_pass http://127.0.0.1:9191;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-For $remote_addr;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_read_timeout 90s;   # "Uji dulu" / "Periksa sekarang" can take up to 60 s
+    }
+}
+
+# Behind Cloudflare, $remote_addr is Cloudflare's address, so every visitor would look like one
+# client and a few failed logins would lock everybody out. Restore the real address first:
+#
+#   # /etc/nginx/conf.d/cloudflare-realip.conf   (list from https://www.cloudflare.com/ips/)
+#   set_real_ip_from 173.245.48.0/20;   # ... and the rest of Cloudflare's ranges
+#   real_ip_header CF-Connecting-IP;

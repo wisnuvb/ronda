@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>ronda</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/app.css">
+  <script src="/theme.js"></script>
+  <script src="/app-config.js"></script>
+</head>
+<body>
+  <a class="skip" href="#main" id="skip" data-i18n="Skip to main content">Skip to main content</a>
+
+  <header class="topbar" id="topbar" hidden>
+    <div class="wrap topbar-in">
+      <a class="brand" href="#/" aria-label="ronda, back to the site list" data-i18n-aria-label="{app}, back to the site list">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+        <span>ronda</span>
+      </a>
+      <nav aria-label="Main" data-i18n-aria-label="Main" class="nav">
+        <a href="#/" data-nav="list" data-i18n="Sites">Sites</a>
+        <a href="#/incidents" data-nav="incidents" data-i18n="Incidents">Incidents</a>
+        <a href="/status" id="status-link" target="_blank" rel="noopener" hidden><span data-i18n="Status page">Status page</span><span class="sr-only"> <span data-i18n="(opens in a new tab)">(opens in a new tab)</span></span></a>
+      </nav>
+      <div class="topbar-actions">
+        <button type="button" class="btn btn-ghost btn-icon" id="theme-toggle"></button>
+        <button type="button" class="btn btn-ghost btn-icon" id="account" hidden></button>
+        <button type="button" class="btn btn-ghost" id="logout"></button>
+      </div>
+    </div>
+  </header>
+
+  <main id="main" class="wrap" tabindex="-1"></main>
+
+  <div id="live" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+  <div id="toasts" class="toasts" role="status" aria-live="polite"></div>
+
+  <noscript><p class="noscript">This dashboard requires JavaScript.</p></noscript>
+  <script type="module" src="/app.js"></script>
+</body>
+</html>
