@@ -81,6 +81,26 @@ and is updated as testing changes.
   `ReadWritePaths` drop-in when it does not exist, after which a site written to it survives a restart. The migration
   scenarios were repeated afterwards with the same results.
 
+## Public demo and landing page
+
+- `ronda demo -public` was tested with unit tests (every method other than GET and HEAD, `/ping/`, the import and the
+  login are refused with 403, nothing is created, the refusal is translated, and `/app-config.js` announces the demo only
+  in this mode) and against the running binary with curl.
+- The "Live demo" banner was looked at in real Chrome at 1280 px and at a true 375 px viewport (DevTools device
+  emulation), in the light and dark themes: readable, no horizontal scroll, and it does not cover the navigation.
+- The demo unit `deploy/site/ronda-demo.service` was run in a systemd container (Ubuntu 24.04 arm64): it starts under
+  its hardening (`systemd-analyze security` 1.5), runs as a dynamic user, listens on loopback only, answers reads and
+  refuses writes.
+- `deploy/site/nginx-demo.conf.example` and `nginx-landing.conf.example` were tested with a real nginx in a container
+  (self-signed certificate): HTTP to HTTPS redirect, GET and HEAD only, `/ping/` 404, body limit, security headers, and the
+  rate limit. A first rate limit that was too strict for a normal page load (about 30 files at once) was found and raised.
+- The landing page was served through the landing config and opened in real Chrome with its Content-Security-Policy
+  applied: 10 requests, all 200, no CSP violations or console messages, the copy buttons appear (JavaScript ran), no
+  horizontal scroll at 1280 px and 375 px. Text contrast of 50 colour pairs was checked numerically in both themes, and the
+  tab order and focus rings were checked with real key events.
+- Every factual claim on the landing page was compared with the README and the code (hash algorithm, defaults, the
+  outgoing connections, sizes).
+
 ## Dashboard
 
 - The dashboard was checked in Chromium at desktop width and at 375 px, in light and dark themes, including creating a
@@ -163,3 +183,9 @@ the numbers will differ.
   hand, but the workflows themselves had not run when this was written. The first CI run found two problems (a `gofmt`
   version mismatch and `make vuln` using an older Go); both are fixed but not yet seen passing on GitHub.
 - `deploy/docker-compose.yml` was validated with `docker compose config`; `docker compose up` was not run.
+- The landing page in Safari and Firefox and with a screen reader; the copy-to-clipboard buttons were not clicked (headless
+  Chrome cannot grant clipboard permission).
+- Anything with Cloudflare in front, the Origin Certificate flow, `make deploy-site` against a real host, and the real
+  server's distribution, nginx version and architecture.
+- The install commands on the landing page and in the README that download the release tarball and the Docker image: they
+  assume release `v0.1.0` has been published by the release workflow, which has not run yet.

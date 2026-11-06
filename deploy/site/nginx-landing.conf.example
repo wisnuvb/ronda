@@ -1,0 +1,55 @@
+# ronda.tipamedia.com: the static landing page (the files of site/ in this repository).
+# Copy to /etc/nginx/sites-available/ronda-landing, symlink into sites-enabled, then: nginx -t && systemctl reload nginx
+#
+# Put the files in /var/www/ronda (make deploy-site HOST=user@server does it with rsync).
+
+server {
+    listen 80;
+    listen [::]:80;
+    server_name ronda.tipamedia.com;
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen 443 ssl;
+    listen [::]:443 ssl;
+    http2 on;
+    server_name ronda.tipamedia.com;
+
+    # A Cloudflare Origin Certificate (or Let's Encrypt). With Cloudflare's SSL mode "Full (strict)" the origin
+    # must present a certificate it trusts; see docs/hosting-landing-and-demo.md.
+    ssl_certificate     /etc/ssl/ronda/origin.pem;
+    ssl_certificate_key /etc/ssl/ronda/origin.key;
+    ssl_protocols TLSv1.2 TLSv1.3;
+
+    include /etc/nginx/cloudflare-realip.conf;
+
+    server_tokens off;
+    root /var/www/ronda;
+    index index.html;
+
+    # The page uses no inline script or style, loads nothing from other sites, and may not be framed, so the
+    # policy can be this strict. (If you add something to the page that needs more, change it here too.)
+    add_header Content-Security-Policy "default-src 'none'; img-src 'self'; style-src 'self'; script-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'" always;
+    add_header Strict-Transport-Security "max-age=31536000" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header X-Frame-Options "DENY" always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+    add_header Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()" always;
+    # Note: an add_header inside a location would replace all of the above for that location. Use `expires` there.
+
+    gzip on;
+    gzip_vary on;
+    gzip_types text/css application/javascript image/svg+xml application/xml text/plain;
+
+    location / {
+        limit_except GET HEAD { deny all; }
+        try_files $uri $uri/ =404;
+        expires 5m;                     # the page itself: changes show up quickly
+    }
+
+    location /assets/ {
+        limit_except GET HEAD { deny all; }
+        expires 1h;                     # file names are not versioned, so keep this short
+    }
+}

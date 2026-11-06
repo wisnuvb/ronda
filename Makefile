@@ -4,7 +4,7 @@ VERSION ?= $(shell git describe --tags --always 2>/dev/null || echo dev)
 TOOLCHAIN := $(shell awk '/^toolchain /{print $$2}' go.mod)
 LDFLAGS := -s -w -X main.version=$(VERSION)
 
-.PHONY: test vuln build demo build-linux build-arm64 release check-host deploy clean
+.PHONY: test vuln build demo build-linux build-arm64 release check-host deploy deploy-site clean
 
 test:
 	go vet ./...
@@ -48,6 +48,11 @@ deploy: release
 	@test -n "$(HOST)" || { echo "usage: make deploy HOST=user@server [ARGS=...]"; exit 1; }
 	scp dist/ronda-$(VERSION).tar.gz $(HOST):/tmp/
 	ssh -t $(HOST) 'cd /tmp && tar xzf ronda-$(VERSION).tar.gz && cd ronda-$(VERSION) && sudo ./install.sh $(ARGS)'
+
+# Copy the landing page to the web server (see docs/hosting-landing-and-demo.md).   make deploy-site HOST=user@server
+deploy-site:
+	@test -n "$(HOST)" || { echo "usage: make deploy-site HOST=user@server [SITE_DIR=/var/www/ronda]"; exit 1; }
+	rsync -rlt --delete --chmod=D755,F644 site/ $(HOST):$(or $(SITE_DIR),/var/www/ronda)/
 
 clean:
 	rm -rf bin data dist

@@ -2,6 +2,7 @@ package config
 
 import (
 	"encoding/json"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -51,9 +52,42 @@ func TestShippedExampleConfigHasNoSecrets(t *testing.T) {
 	}
 }
 
+// shippedFiles lists every text file that is published with the project and could carry a secret by mistake: the
+// deploy examples, the landing page, the docs and the top-level documents. Images are skipped.
+func shippedFiles(t *testing.T) []string {
+	t.Helper()
+	root := filepath.Join("..", "..")
+	var files []string
+	for _, dir := range []string{"deploy", "site", "docs", ".github"} {
+		err := filepath.WalkDir(filepath.Join(root, dir), func(path string, d fs.DirEntry, err error) error {
+			if err != nil {
+				return err
+			}
+			if d.IsDir() {
+				return nil
+			}
+			switch filepath.Ext(path) {
+			case ".png", ".webp", ".jpg", ".jpeg", ".gif", ".ico":
+				return nil
+			}
+			files = append(files, path)
+			return nil
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+	for _, f := range []string{"README.md", "README.id.md", "CHANGELOG.md", "CONTRIBUTING.md", "SECURITY.md", "Makefile", "Dockerfile"} {
+		files = append(files, filepath.Join(root, f))
+	}
+	return files
+}
+
 func TestShippedFilesHaveNoSecretShapes(t *testing.T) {
-	files, _ := filepath.Glob(filepath.Join("..", "..", "deploy", "*"))
-	files = append(files, filepath.Join("..", "..", "README.md"), filepath.Join("..", "..", "Makefile"))
+	files := shippedFiles(t)
+	if len(files) < 20 {
+		t.Fatalf("found only %d files to scan: has the walk broken?", len(files))
+	}
 	for _, f := range files {
 		raw, err := os.ReadFile(f)
 		if err != nil {

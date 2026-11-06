@@ -149,6 +149,23 @@ One instance has one language and one time zone, set for the whole process.
 
 `install.sh` targets **Linux with systemd** (amd64 and arm64). It is safe to run again.
 
+**From a release.** Each release attaches `ronda-<version>.tar.gz` (both Linux binaries, the installer, the unit and the
+examples) and a `SHA256SUMS` file. On the server:
+
+```bash
+curl -fLO https://github.com/wisnuvb/ronda/releases/download/v0.1.0/ronda-v0.1.0.tar.gz
+curl -fLO https://github.com/wisnuvb/ronda/releases/download/v0.1.0/SHA256SUMS
+sha256sum -c SHA256SUMS
+tar xzf ronda-v0.1.0.tar.gz && cd ronda-v0.1.0
+./install.sh --check                   # read-only: can this host run Ronda?
+sudo ./install.sh --set-password
+```
+
+You can build the same tarball yourself with `make release` (see [Quick start](#quick-start)).
+
+To publish a read-only demo of your own, run `ronda demo -public` behind a reverse proxy; see
+[docs/hosting-landing-and-demo.md](docs/hosting-landing-and-demo.md).
+
 | Command | What it does |
 |---|---|
 | `./install.sh --check` | read-only: Linux, architecture, systemd, binary, port, curl |
@@ -233,7 +250,9 @@ them) and a state directory, about 3.5 MB. It runs as the unprivileged user `655
 filesystem and all capabilities dropped.
 
 ```bash
-cp deploy/config.example.json config.json     # set api.token (gen-token) and the rest; leave data_dir as /var/lib/ronda
+# from a clone of the repository you can use deploy/config.example.json instead of downloading it
+curl -fL -o config.json https://raw.githubusercontent.com/wisnuvb/ronda/v0.1.0/deploy/config.example.json
+docker run --rm ghcr.io/wisnuvb/ronda:latest gen-token     # a random api.token; put it in config.json (leave data_dir as /var/lib/ronda)
 docker run -d --name ronda --restart unless-stopped \
   -p 127.0.0.1:9191:9191 \
   -v "$PWD/config.json:/etc/ronda/config.json:ro" -v ronda-data:/var/lib/ronda \

@@ -152,6 +152,23 @@ Satu instance memakai satu bahasa dan satu zona waktu, berlaku untuk seluruh pro
 
 `install.sh` untuk **Linux dengan systemd** (amd64 dan arm64). Aman dijalankan ulang.
 
+**Dari rilis.** Setiap rilis melampirkan `ronda-<versi>.tar.gz` (kedua binary Linux, installer, unit, dan contoh) serta
+berkas `SHA256SUMS`. Di server:
+
+```bash
+curl -fLO https://github.com/wisnuvb/ronda/releases/download/v0.1.0/ronda-v0.1.0.tar.gz
+curl -fLO https://github.com/wisnuvb/ronda/releases/download/v0.1.0/SHA256SUMS
+sha256sum -c SHA256SUMS
+tar xzf ronda-v0.1.0.tar.gz && cd ronda-v0.1.0
+./install.sh --check                   # hanya memeriksa: apakah host ini bisa menjalankan Ronda?
+sudo ./install.sh --set-password
+```
+
+Tarball yang sama bisa Anda bangun sendiri dengan `make release` (lihat [Mulai cepat](#mulai-cepat)).
+
+Untuk menerbitkan demo baca-saja milik Anda sendiri, jalankan `ronda demo -public` di belakang reverse proxy; lihat
+[docs/hosting-landing-and-demo.md](docs/hosting-landing-and-demo.md) (dalam bahasa Inggris).
+
 | Perintah | Fungsi |
 |---|---|
 | `./install.sh --check` | hanya memeriksa: Linux, arsitektur, systemd, biner, port, curl |
@@ -236,7 +253,9 @@ direktori state, sekitar 3,5 MB. Ia berjalan sebagai pengguna tanpa hak istimewa
 filesystem root read-only dan semua capability dicabut.
 
 ```bash
-cp deploy/config.example.json config.json     # isi api.token (gen-token) dan lainnya; biarkan data_dir /var/lib/ronda
+# dari klon repositori, Anda bisa memakai deploy/config.example.json alih-alih mengunduhnya
+curl -fL -o config.json https://raw.githubusercontent.com/wisnuvb/ronda/v0.1.0/deploy/config.example.json
+docker run --rm ghcr.io/wisnuvb/ronda:latest gen-token     # api.token acak; isikan ke config.json (biarkan data_dir /var/lib/ronda)
 docker run -d --name ronda --restart unless-stopped \
   -p 127.0.0.1:9191:9191 \
   -v "$PWD/config.json:/etc/ronda/config.json:ro" -v ronda-data:/var/lib/ronda \

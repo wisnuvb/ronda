@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<!--
+  Ronda landing page. Static, no build step, no third-party requests.
+
+  DEMO_URL=https://ronda-demo.tipamedia.com/
+  The demo address appears in a few links below. To change it everywhere in one line:
+    sed -i.bak 's#https://ronda-demo.tipamedia.com/#https://NEW.example.com/#g' site/index.html && rm site/index.html.bak
+  (find them first with: grep -n 'ronda-demo.tipamedia.com' site/index.html)
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ronda: self-hosted uptime monitor with Telegram alerts</title>
+<meta name="description" content="Ronda is an open-source, self-hosted uptime monitor. It checks your sites from the outside and tells you on Telegram when one is down. One binary, no dependencies.">
+<link rel="canonical" href="https://ronda.tipamedia.com/">
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0d1117" media="(prefers-color-scheme: dark)">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Ronda">
+<meta property="og:title" content="Ronda: self-hosted uptime monitor with Telegram alerts">
+<meta property="og:description" content="Watches your sites from the outside and tells you on Telegram when one goes down. One binary, no dependencies, MIT licence.">
+<meta property="og:url" content="https://ronda.tipamedia.com/">
+<meta property="og:image" content="https://ronda.tipamedia.com/assets/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Ronda logo and the line: self-hosted uptime monitor that watches from the outside.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Ronda: self-hosted uptime monitor with Telegram alerts">
+<meta name="twitter:description" content="Watches your sites from the outside and tells you on Telegram when one goes down. One binary, no dependencies, MIT licence.">
+<meta name="twitter:image" content="https://ronda.tipamedia.com/assets/og-image.png">
+
+<link rel="stylesheet" href="assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Ronda",
+  "description": "Open-source, self-hosted website and uptime monitor that checks from the outside and sends alerts on Telegram.",
+  "url": "https://ronda.tipamedia.com/",
+  "applicationCategory": "DeveloperApplication",
+  "operatingSystem": "Linux",
+  "license": "https://github.com/wisnuvb/ronda/blob/main/LICENSE",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "author": { "@type": "Person", "name": "Wisnu Saputro" }
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to main content</a>
+
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="./" aria-label="Ronda, home">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7" fill="#1d4ed8"/><path d="M27 16h-5l-4 10-6-20-4 10H5" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Ronda
+    </a>
+    <nav class="nav" aria-label="Main">
+      <a href="https://ronda-demo.tipamedia.com/">Demo</a>
+      <a href="#features">Features</a>
+      <a href="#install">Install</a>
+      <a href="https://github.com/wisnuvb/ronda">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+
+<section class="hero" aria-labelledby="top">
+  <div class="wrap">
+    <div class="hero-text">
+      <p class="eyebrow"><span class="dot" aria-hidden="true"></span>Open source uptime monitor</p>
+      <h1 id="top">Watch your sites from the outside. Get a Telegram message when one goes down.</h1>
+      <p class="lede">Ronda is a self-hosted monitor in one static binary with no dependencies. It checks like a visitor does and tells you the cause, not just &ldquo;down&rdquo;.</p>
+      <div class="cta">
+        <a class="btn btn-primary" href="https://ronda-demo.tipamedia.com/">Open the live demo
+          <svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"/></svg></a>
+        <a class="btn" href="https://github.com/wisnuvb/ronda">View on GitHub</a>
+      </div>
+      <ul class="facts" aria-label="Key facts">
+        <li>MIT licence</li>
+        <li>single binary</li>
+        <li>English / Indonesian</li>
+      </ul>
+    </div>
+    <figure class="shot hero-shot">
+      <picture>
+        <source srcset="assets/shot-list-dark.webp" type="image/webp" media="(prefers-color-scheme: dark)">
+        <source srcset="assets/shot-list-dark.png" type="image/png" media="(prefers-color-scheme: dark)">
+        <source srcset="assets/shot-list.webp" type="image/webp">
+        <img src="assets/shot-list.png" width="1200" height="712" alt="The Ronda dashboard, sites page: twelve sites with up, down and paused counts. Two sites are down, with the cause shown under each name, such as connection refused. Each row has 24-hour uptime, response time and a strip of the last 30 checks.">
+      </picture>
+    </figure>
+  </div>
+</section>
+
+<section aria-labelledby="why">
+  <div class="wrap why">
+    <div class="body">
+      <h2 id="why">Why outside?</h2>
+      <p>A monitor that runs on the server it watches dies with that server, and then nobody tells you. A check made from inside the server, through a local nginx for example, cannot see DNS, CDN, certificate or firewall problems either.</p>
+      <p>Run Ronda on a different machine. A small VPS elsewhere is enough. Then every check meets what a visitor meets. Ronda can also ping an outside service, so you hear about it if Ronda itself dies.</p>
+    </div>
+    <ol class="steps" aria-label="What every check does from scratch">
+      <li><strong>DNS</strong><span>Look up the name</span></li>
+      <li><strong>TCP</strong><span>Open a connection</span></li>
+      <li><strong>TLS</strong><span>Check the certificate</span></li>
+      <li><strong>Response</strong><span>Status, text, time</span></li>
+      <li class="steps-note">Every check opens a new connection and goes through all four, like a new visitor.</li>
+    </ol>
+  </div>
+</section>
+
+<section class="alt" id="features" aria-labelledby="features-h">
+  <div class="wrap">
+    <div class="section-head">
+      <h2 id="features-h">What it does</h2>
+      <p>Everything is configured from the dashboard, the CLI or the API, while Ronda runs.</p>
+    </div>
+    <ul class="grid">
+      <li class="card">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"/></svg>
+        <h3>Checks that name the cause</h3>
+        <p>HTTP(S), TCP port and DNS record checks. The alert says why: DNS, refused, timeout, certificate, Cloudflare 52x, HTTP 5xx, missing keyword. By default, down means three failures in a row, after Ronda has checked that its own network is up.</p>
+      </li>
+      <li class="card">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+        <h3>Cron and backup monitors</h3>
+        <p>The job calls Ronda after it succeeds. Silence means failure: no ping within the schedule plus a grace period, and you get an alert.</p>
+      </li>
+      <li class="card">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m22 2-7 20-4-9-9-4zM22 2 11 13"/></svg>
+        <h3>Telegram alerts and bot</h3>
+        <p>Bulk outages arrive as one digest. &ldquo;Still down&rdquo; reminders come at 1 h, 6 h and 24 h, then daily. Check, pause, add or remove sites from chat. An optional JSON webhook is there too.</p>
+      </li>
+      <li class="card">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect width="20" height="14" x="2" y="3" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+        <h3>Public status page</h3>
+        <p>Off by default. For each site you choose, it shows the name, status, 90-day uptime and recent incidents. URLs and technical details never leave.</p>
+      </li>
+      <li class="card">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+        <h3>Maintenance windows</h3>
+        <p>Start one before a deploy, or set weekly windows for a nightly job. No checks and no alerts during the window. When it ends, the site is checked again by itself.</p>
+      </li>
+      <li class="card">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect width="18" height="11" x="3" y="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        <h3>Certificate warnings</h3>
+        <p>A message at 14, 7, 3 and 1 days before a certificate expires. You can change the days. An expired certificate counts as down.</p>
+      </li>
+      <li class="card">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v16a2 2 0 0 0 2 2h16M7 16V9M12 16V5M17 16v-4"/></svg>
+        <h3>Daily and weekly reports</h3>
+        <p>A summary on Telegram: uptime, incidents, certificates expiring soon, slowest sites. Off until you set a time. Permanent incident archive, plus export and import of your sites.</p>
+      </li>
+      <li class="card">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        <h3>Time zones and two languages</h3>
+        <p>Any IANA time zone, with daylight saving followed, so a 02:00 window stays at 02:00. The dashboard, alerts, reports and bot speak English or Indonesian.</p>
+      </li>
+      <li class="card">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg>
+        <h3>Careful by default</h3>
+        <p>Passwords are stored only as a PBKDF2 hash. Changes need a CSRF token. A strict CSP applies. A guard refuses private and link-local addresses unless you allow them for a site. It listens on 127.0.0.1 until you say otherwise.</p>
+      </li>
+    </ul>
+    <p class="note"><strong>What it is not (yet):</strong> it has one admin account, one vantage point (a partly broken network on the monitor&rsquo;s side can cause false alerts), Telegram-only recipients and no on-call escalation. <a href="https://github.com/wisnuvb/ronda#known-limitations">The full list is in the README.</a></p>
+  </div>
+</section>
+
+<section aria-labelledby="small-h">
+  <div class="wrap">
+    <div class="section-head">
+      <h2 id="small-h">Small on purpose</h2>
+      <p>Nothing to install first, nothing to keep patched next to it. The dashboard is inside the binary.</p>
+    </div>
+    <ul class="stats">
+      <li><strong>1</strong><span>static Go binary, about 9 MB</span></li>
+      <li><strong>0</strong><span>third-party dependencies: Go standard library only</span></li>
+      <li><strong>&lt; 4 MB</strong><span>Docker image, built <code>FROM scratch</code></span></li>
+      <li><strong>2</strong><span>image architectures: amd64 and arm64</span></li>
+    </ul>
+  </div>
+</section>
+
+<section class="alt" aria-labelledby="shots-h">
+  <div class="wrap">
+    <div class="section-head">
+      <h2 id="shots-h">See it</h2>
+      <p>These are screenshots of the live demo, which runs on synthetic data. <a href="https://ronda-demo.tipamedia.com/">Open it and click around.</a></p>
+    </div>
+    <div class="shots">
+      <figure>
+        <div class="shot"><picture>
+          <source srcset="assets/shot-detail.webp" type="image/webp">
+          <img src="assets/shot-detail.png" width="1200" height="740" loading="lazy" decoding="async" alt="Site detail page for an online shop: uptime for 24 hours, 7, 30 and 90 days, average and p95 response time, certificate days left, and a response-time chart for the last 24 hours."></picture></div>
+        <figcaption>Site detail: uptime, p95 response time, certificate days left and a response-time chart.</figcaption>
+      </figure>
+      <figure>
+        <div class="shot"><picture>
+          <source srcset="assets/shot-dark.webp" type="image/webp">
+          <img src="assets/shot-dark.png" width="1200" height="740" loading="lazy" decoding="async" alt="The same site detail page in the dark theme."></picture></div>
+        <figcaption>The dark theme follows your system setting.</figcaption>
+      </figure>
+      <figure>
+        <div class="shot"><picture>
+          <source srcset="assets/shot-status.webp" type="image/webp">
+          <img src="assets/shot-status.png" width="1000" height="690" loading="lazy" decoding="async" alt="Public status page with a banner saying some services are having problems, then each service with an Operational, Disruption or Maintenance label and a 90-day bar."></picture></div>
+        <figcaption>The public status page, if you turn it on.</figcaption>
+      </figure>
+      <figure>
+        <div class="shot"><picture>
+          <source srcset="assets/shot-incidents.webp" type="image/webp">
+          <img src="assets/shot-incidents.png" width="1200" height="671" loading="lazy" decoding="async" alt="Incident list with site, start, end, duration and cause. Two incidents are marked ongoing, with an explanation such as connection refused: the server is reachable but nothing is listening on that port."></picture></div>
+        <figcaption>Every down period, with start, end, duration and cause.</figcaption>
+      </figure>
+      <div class="mobile">
+        <figure class="shot">
+          <picture>
+            <source srcset="assets/shot-mobile.webp" type="image/webp">
+            <img src="assets/shot-mobile.png" width="750" height="1592" loading="lazy" decoding="async" alt="The sites page at 375 pixel width: summary cards in two columns, search, filter buttons, and each site shown as a card."></picture>
+        </figure>
+        <div>
+          <h3>Works on a phone</h3>
+          <p class="note-line">On narrow screens the tables become cards. Status is shown as an icon and a word, never by colour alone. The dashboard is usable from the keyboard and respects reduced motion.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="install" aria-labelledby="install-h">
+  <div class="wrap">
+    <div class="section-head">
+      <h2 id="install-h">Install in a minute</h2>
+      <p>Pick one. These commands assume release v0.1.0 has been published.</p>
+    </div>
+    <div class="installs">
+      <div class="install">
+        <h3>Docker</h3>
+        <p>A multi-architecture image (amd64, arm64) on GitHub&rsquo;s container registry. It runs as an unprivileged user with a read-only root filesystem.</p>
+        <div class="code">
+          <div class="code-bar"><span>shell</span></div>
+<pre tabindex="0" aria-label="Docker commands"><code>curl -fL -o config.json https://raw.githubusercontent.com/wisnuvb/ronda/v0.1.0/deploy/config.example.json
+docker run --rm ghcr.io/wisnuvb/ronda:latest gen-token     # a random api.token; put it in config.json (leave data_dir as /var/lib/ronda)
+docker run -d --name ronda --restart unless-stopped \
+  -p 127.0.0.1:9191:9191 \
+  -v "$PWD/config.json:/etc/ronda/config.json:ro" -v ronda-data:/var/lib/ronda \
+  --read-only --cap-drop ALL --security-opt no-new-privileges:true \
+  ghcr.io/wisnuvb/ronda:latest</code></pre>
+        </div>
+        <p class="note-line">Publish the port to loopback only, as above, and put a reverse proxy with TLS in front of it.</p>
+      </div>
+
+      <div class="install">
+        <h3>Linux server (systemd)</h3>
+        <p>Download the release on the server, check its checksum, then run the installer. The installer is safe to run again, migrates older installs and puts the previous binary back if the new one is not healthy.</p>
+        <div class="code">
+          <div class="code-bar"><span>shell</span></div>
+<pre tabindex="0" aria-label="Installer commands"><code>curl -fLO https://github.com/wisnuvb/ronda/releases/download/v0.1.0/ronda-v0.1.0.tar.gz
+curl -fLO https://github.com/wisnuvb/ronda/releases/download/v0.1.0/SHA256SUMS
+sha256sum -c SHA256SUMS
+tar xzf ronda-v0.1.0.tar.gz &amp;&amp; cd ronda-v0.1.0
+./install.sh --check                  # read-only: can this host run Ronda?
+sudo ./install.sh --set-password</code></pre>
+        </div>
+        <p class="note-line">Prefer to build it yourself? <code>make release</code> builds the same tarball (it needs Go and runs the tests first), and <code>make deploy HOST=user@server</code> copies it over SSH and installs it.</p>
+      </div>
+
+      <div class="install">
+        <h3>Try it locally first</h3>
+        <p>Starts the dashboard with synthetic data and no login, only on 127.0.0.1. Needs Go 1.24 or newer.</p>
+        <div class="code">
+          <div class="code-bar"><span>shell</span></div>
+<pre tabindex="0" aria-label="Demo command"><code>make demo        # open http://127.0.0.1:9191</code></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="alt" aria-labelledby="faq-h">
+  <div class="wrap">
+    <div class="section-head">
+      <h2 id="faq-h">Questions</h2>
+    </div>
+    <div class="faq">
+      <details>
+        <summary>Does it phone home?</summary>
+        <div class="answer">
+          <p>No telemetry and no update check. Ronda connects only to what you configure: the sites you monitor, the Telegram API, your webhook and your heartbeat address.</p>
+          <p>One more is on by default. Before it declares a site down, it opens a plain TCP connection to <code>1.1.1.1:443</code> and <code>8.8.8.8:443</code> to make sure its own network works. Set <code>control_addrs</code> to <code>[]</code> to turn that off.</p>
+        </div>
+      </details>
+      <details>
+        <summary>What happens if the server Ronda runs on dies?</summary>
+        <div class="answer">
+          <p>Nobody can tell you, because the messenger died too. That is why Ronda can send a heartbeat: set <code>heartbeat_url</code> to an outside service that raises an alarm when pings stop. Pings also stop when checking has stalled, so a process that is alive but not working triggers it as well.</p>
+          <p>Run Ronda on a different machine than the one it watches.</p>
+        </div>
+      </details>
+      <details>
+        <summary>Can it monitor internal services?</summary>
+        <div class="answer">
+          <p>Yes, if Ronda can reach them. Loopback, private and link-local addresses are refused by default, so the dashboard cannot be used to scan your network. Turn on <code>allow_private</code> for the sites that need it. The Telegram bot cannot turn it on.</p>
+        </div>
+      </details>
+      <details>
+        <summary>Is there a hosted version?</summary>
+        <div class="answer">
+          <p>No. You run it yourself, on your own machine. It is free and MIT licensed.</p>
+        </div>
+      </details>
+      <details>
+        <summary>Which languages does it speak?</summary>
+        <div class="answer">
+          <p>English and Indonesian: the dashboard, Telegram and webhook messages, reports and the bot. One instance uses one language. The command line is English only. A missing translation falls back to English, and the README explains how to add a language.</p>
+        </div>
+      </details>
+      <details>
+        <summary>How do I contribute?</summary>
+        <div class="answer">
+          <p>Issues and pull requests are welcome on <a href="https://github.com/wisnuvb/ronda">GitHub</a>. Start with <a href="https://github.com/wisnuvb/ronda/blob/main/CONTRIBUTING.md">CONTRIBUTING.md</a>. Please report security problems privately, as described in the <a href="https://github.com/wisnuvb/ronda/blob/main/SECURITY.md">security policy</a>.</p>
+        </div>
+      </details>
+    </div>
+  </div>
+</section>
+
+<section class="closing" aria-labelledby="closing-h">
+  <div class="wrap">
+    <h2 id="closing-h">See it before you install anything</h2>
+    <p>The demo is a read-only dashboard with synthetic data. No sign-up.</p>
+    <div class="cta">
+      <a class="btn btn-primary" href="https://ronda-demo.tipamedia.com/">Open the live demo
+        <svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"/></svg></a>
+      <a class="btn" href="https://github.com/wisnuvb/ronda">View on GitHub</a>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <nav class="footer-nav" aria-label="Project">
+      <a href="https://github.com/wisnuvb/ronda">GitHub</a>
+      <a href="https://github.com/wisnuvb/ronda/blob/main/LICENSE">MIT licence</a>
+      <a href="https://github.com/wisnuvb/ronda/blob/main/CHANGELOG.md">Changelog</a>
+      <a href="https://github.com/wisnuvb/ronda/blob/main/SECURITY.md">Security policy</a>
+      <a href="https://github.com/wisnuvb/ronda/blob/main/CONTRIBUTING.md">Contributing</a>
+    </nav>
+    <p><em>Ronda</em> is Indonesian for the night-watch round that a neighbourhood walks to check that all is well. This is the same job for your websites, servers and scheduled jobs.</p>
+    <p>Built by Wisnu Saputro. This page sets no cookies and loads nothing from other sites.</p>
+  </div>
+</footer>
+
+<script src="assets/site.js" defer></script>
+</body>
+</html>

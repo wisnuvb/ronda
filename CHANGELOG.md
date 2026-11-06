@@ -8,11 +8,19 @@ All notable changes to this project are documented here. The format follows
 
 ### Added
 
+- **Public demo mode**: `ronda demo -public` serves the synthetic dashboard read-only (every change is refused with 403,
+  `/ping/` too) and shows a "Live demo" banner. Meant to be published behind a reverse proxy.
+- **Landing page** (`site/`) and the files to host it with the demo (`deploy/site/`, `docs/hosting-landing-and-demo.md`,
+  `make deploy-site`).
 - **Docker image** (`Dockerfile`, `deploy/docker-compose.yml`): `FROM scratch`, about 3.5 MB, unprivileged user, works
   with a read-only root filesystem. The release workflow publishes it for `linux/amd64` and `linux/arm64` to
   `ghcr.io/wisnuvb/ronda`.
 - `ronda healthcheck`: exit status 0 if a running instance answers `/healthz` (used by the image's health check).
 - Environment overrides `RONDA_LISTEN`, `RONDA_TIMEZONE` and `RONDA_LANGUAGE`.
+
+### Changed
+
+- The README and the install instructions now start from the release tarball (with `SHA256SUMS`) instead of building it.
 
 ### Fixed
 

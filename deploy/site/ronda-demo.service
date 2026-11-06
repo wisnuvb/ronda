@@ -1,0 +1,46 @@
+[Unit]
+Description=Ronda public demo (read-only, synthetic data)
+Documentation=https://github.com/wisnuvb/ronda
+After=network.target
+
+[Service]
+Type=simple
+# -public: read-only. Visitors can look at everything and change nothing. It listens on loopback only; nginx
+# publishes it (see nginx-demo.conf.example).
+ExecStart=/usr/local/bin/ronda demo -public -listen 127.0.0.1:9192 -lang en -timezone UTC
+Restart=always
+RestartSec=3
+DynamicUser=yes
+
+# The demo is synthetic: it needs no network except accepting connections from nginx on loopback.
+IPAddressDeny=any
+IPAddressAllow=localhost
+PrivateTmp=true
+NoNewPrivileges=true
+CapabilityBoundingSet=
+AmbientCapabilities=
+ProtectSystem=strict
+ProtectHome=true
+PrivateDevices=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
+ProtectControlGroups=true
+ProtectClock=true
+ProtectHostname=true
+LockPersonality=true
+RestrictRealtime=true
+RestrictSUIDSGID=true
+RestrictNamespaces=true
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+SystemCallErrorNumber=EPERM
+UMask=0077
+MemoryMax=128M
+Environment=GOMEMLIMIT=96MiB
+TasksMax=128
+LimitNOFILE=1024
+
+[Install]
+WantedBy=multi-user.target
