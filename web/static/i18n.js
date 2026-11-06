@@ -10,7 +10,7 @@
 import idCatalog from './i18n-id.js';
 
 /** The product name, kept in one place. It is also available to every message as {app}. */
-export const APP_NAME = 'ronda';
+export const APP_NAME = 'Ronda';
 
 const CATALOGS = { id: idCatalog };
 const cfg = (typeof window !== 'undefined' && window.RONDA) || {};

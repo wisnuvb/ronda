@@ -1,4 +1,7 @@
 VERSION ?= $(shell git describe --tags --always 2>/dev/null || echo dev)
+# The toolchain pinned in go.mod. govulncheck must be built with it: built with an older Go it cannot read the
+# newer standard library that Ronda is compiled against.
+TOOLCHAIN := $(shell awk '/^toolchain /{print $$2}' go.mod)
 LDFLAGS := -s -w -X main.version=$(VERSION)
 
 .PHONY: test vuln build demo build-linux build-arm64 release check-host deploy clean
@@ -9,7 +12,7 @@ test:
 
 # Known-vulnerability scan of the code and of the Go standard library it is built with. Needs network.
 vuln:
-	go run golang.org/x/vuln/cmd/govulncheck@latest ./...
+	GOTOOLCHAIN=$(or $(TOOLCHAIN),auto) go run golang.org/x/vuln/cmd/govulncheck@latest ./...
 
 # Try the dashboard with synthetic data and no login; edit web/static and refresh to see changes.
 demo:

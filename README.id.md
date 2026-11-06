@@ -116,6 +116,8 @@ butuh `telegram_token`; `telegram_token` dan `telegram_chat_id` harus diisi bers
 
 | Variabel | Menimpa |
 |---|---|
+| `RONDA_LISTEN` | `listen` |
+| `RONDA_TIMEZONE`, `RONDA_LANGUAGE` | `timezone`, `language` |
 | `RONDA_API_TOKEN` | `api.token` (CLI juga membacanya) |
 | `RONDA_PASSWORD_HASH` | `auth.password_hash` |
 | `RONDA_TELEGRAM_TOKEN`, `RONDA_TELEGRAM_CHAT_ID` | `notify.telegram_token`, `notify.telegram_chat_id` |
@@ -224,6 +226,36 @@ Perintah lain: `run`, `demo`, `hash-password`, `config-check`, `telegram-test`, 
 3. Buka `https://api.telegram.org/bot<TOKEN>/getUpdates` dan ambil `chat.id` (grup biasanya negatif).
 4. Isi `notify.telegram_token` dan `notify.telegram_chat_id` (beberapa id dipisah koma), lalu jalankan
    `ronda telegram-test`.
+
+## Docker
+
+Setiap rilis menerbitkan image multi-arsitektur (`linux/amd64`, `linux/arm64`) ke registry container GitHub sebagai
+`ghcr.io/wisnuvb/ronda` (tag `0.1.0`, `0.1`, dan `latest`). Sebelum itu terbit, bangun sendiri dengan
+`docker build -t ronda .`. Image dibangun `FROM scratch`: hanya binary, sertifikat CA (cek HTTPS membutuhkannya), dan
+direktori state, sekitar 3,5 MB. Ia berjalan sebagai pengguna tanpa hak istimewa `65532` dan bisa dijalankan dengan
+filesystem root read-only dan semua capability dicabut.
+
+```bash
+cp deploy/config.example.json config.json     # isi api.token (gen-token) dan lainnya; biarkan data_dir /var/lib/ronda
+docker run -d --name ronda --restart unless-stopped \
+  -p 127.0.0.1:9191:9191 \
+  -v "$PWD/config.json:/etc/ronda/config.json:ro" -v ronda-data:/var/lib/ronda \
+  --read-only --cap-drop ALL --security-opt no-new-privileges:true \
+  ghcr.io/wisnuvb/ronda:latest
+```
+
+[deploy/docker-compose.yml](deploy/docker-compose.yml) adalah hal yang sama dalam bentuk berkas Compose.
+
+- **Port.** Image mengatur `RONDA_LISTEN=0.0.0.0:9191`, karena di dalam container `127.0.0.1` pada config tidak bisa
+  dijangkau. Publikasikan port ke loopback host seperti di atas, dan pasang reverse proxy dengan TLS di depannya
+  ([deploy/nginx.conf.example](deploy/nginx.conf.example)); jangan membukanya ke internet apa adanya.
+- **Data.** Simpan `/var/lib/ronda` di volume. Volume bernama langsung bisa dipakai; direktori bind-mount harus dimiliki
+  uid `65532`. Bila `data_dir` tidak bisa ditulis, Ronda menolak berjalan dan menyebut sebabnya.
+- **Pengaturan lewat environment.** `RONDA_TIMEZONE`, `RONDA_LANGUAGE`, dan rahasia pada
+  [override environment](#konfigurasi) berlaku di container; berkas config tetap wajib ada.
+- **Health check.** Image mendeklarasikannya (`ronda healthcheck`, yang menanyakan `/healthz` lewat loopback); di
+  dalamnya tidak ada `curl`.
+- **CLI.** `docker exec -e RONDA_API_TOKEN=<token> ronda ronda site list` menjalankan CLI terhadap container.
 
 ## Dashboard
 
@@ -593,8 +625,8 @@ Untuk melaporkan kerentanan, lihat [SECURITY.md](SECURITY.md).
   `events.jsonl`) saat Ronda berhenti.
 - Pembatas login dihitung **per alamat IP**: bila banyak orang berbagi satu NAT, atau proxy tidak meneruskan alamat asli
   (`trust_proxy` salah), satu orang yang salah ketik berulang bisa mengunci semuanya selama 10 menit.
-- Tidak ada image Docker, dan installer hanya untuk Linux dengan systemd. `make build` dan `make demo` berjalan di macOS
-  dan Linux yang punya Go; server Windows dan macOS tidak diklaim.
+- Installer hanya untuk Linux dengan systemd (lihat [image Docker](#docker) untuk platform lain). `make build` dan
+  `make demo` berjalan di macOS dan Linux yang punya Go; server Windows dan macOS tidak diklaim.
 - Katalog bahasa: hanya Inggris dan Indonesia; CLI dan bantuannya hanya berbahasa Inggris.
 
 Apa yang sudah dan belum diuji dicatat apa adanya di [docs/testing.md](docs/testing.md) (bahasa Inggris).

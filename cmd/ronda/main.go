@@ -13,6 +13,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"os/signal"
@@ -50,6 +51,8 @@ Usage:
   ronda hash-password                             turn a password (read from stdin) into a hash for auth.password_hash
   ronda check [flags] URL                         check one URL now (nothing is saved)
   ronda config-check [-config ...]                validate the config (runs nothing)
+  ronda healthcheck [-config ...] [-addr host:port]
+                                                   exit 0 if the running instance answers /healthz (for Docker HEALTHCHECK)
   ronda telegram-test [-config ...]               send a test message to Telegram
   ronda gen-token                                 create a random API token
   ronda site list|add|rm|pause|resume|export|import ...  manage sites through the running API
@@ -76,6 +79,8 @@ func main() {
 		err = cmdCheck(args)
 	case "config-check":
 		err = cmdConfigCheck(args)
+	case "healthcheck":
+		err = cmdHealthcheck(args)
 	case "telegram-test":
 		err = cmdTelegramTest(args)
 	case "demo":
@@ -329,6 +334,41 @@ func cmdCheck(args []string) error {
 	}
 	if !r.OK {
 		os.Exit(1)
+	}
+	return nil
+}
+
+// cmdHealthcheck asks a running instance whether it is alive. It exists for container health checks, where the
+// image has no curl: exit status 0 means /healthz answered 200 within a few seconds. The address is the config's
+// listen (so RONDA_LISTEN applies), or -addr.
+func cmdHealthcheck(args []string) error {
+	fs := flag.NewFlagSet("healthcheck", flag.ExitOnError)
+	path := fs.String("config", "/etc/ronda/config.json", "path to config.json")
+	addr := fs.String("addr", "", "host:port to ask instead of the config's listen")
+	fs.Parse(args)
+	if *addr == "" {
+		cfg, err := config.Load(*path)
+		if err != nil {
+			return err
+		}
+		*addr = cfg.Listen
+	}
+	host, port, err := net.SplitHostPort(*addr)
+	if err != nil {
+		return err
+	}
+	switch host {
+	case "", "0.0.0.0", "::":
+		host = "127.0.0.1" // listening on every address: ask over loopback
+	}
+	c := &http.Client{Timeout: 3 * time.Second}
+	resp, err := c.Get("http://" + net.JoinHostPort(host, port) + "/healthz")
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("healthz answered %s", resp.Status)
 	}
 	return nil
 }

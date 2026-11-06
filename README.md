@@ -113,6 +113,8 @@ need `telegram_token`; `telegram_token` and `telegram_chat_id` must be set toget
 
 | Variable | Overrides |
 |---|---|
+| `RONDA_LISTEN` | `listen` |
+| `RONDA_TIMEZONE`, `RONDA_LANGUAGE` | `timezone`, `language` |
 | `RONDA_API_TOKEN` | `api.token` (the CLI reads it too) |
 | `RONDA_PASSWORD_HASH` | `auth.password_hash` |
 | `RONDA_TELEGRAM_TOKEN`, `RONDA_TELEGRAM_CHAT_ID` | `notify.telegram_token`, `notify.telegram_chat_id` |
@@ -221,6 +223,36 @@ Other commands: `run`, `demo`, `hash-password`, `config-check`, `telegram-test`,
 3. Open `https://api.telegram.org/bot<TOKEN>/getUpdates` and read `chat.id` (groups are usually negative).
 4. Fill in `notify.telegram_token` and `notify.telegram_chat_id` (several ids separated by commas), then run
    `ronda telegram-test`.
+
+## Docker
+
+Each release publishes a multi-architecture image (`linux/amd64`, `linux/arm64`) to GitHub's container registry as
+`ghcr.io/wisnuvb/ronda` (tags `0.1.0`, `0.1` and `latest`). Until one is published you can build it yourself with
+`docker build -t ronda .`. The image is built `FROM scratch`: the binary, the CA certificates (HTTPS checks need
+them) and a state directory, about 3.5 MB. It runs as the unprivileged user `65532` and works with a read-only root
+filesystem and all capabilities dropped.
+
+```bash
+cp deploy/config.example.json config.json     # set api.token (gen-token) and the rest; leave data_dir as /var/lib/ronda
+docker run -d --name ronda --restart unless-stopped \
+  -p 127.0.0.1:9191:9191 \
+  -v "$PWD/config.json:/etc/ronda/config.json:ro" -v ronda-data:/var/lib/ronda \
+  --read-only --cap-drop ALL --security-opt no-new-privileges:true \
+  ghcr.io/wisnuvb/ronda:latest
+```
+
+[deploy/docker-compose.yml](deploy/docker-compose.yml) is the same as a Compose file.
+
+- **Port.** The image sets `RONDA_LISTEN=0.0.0.0:9191`, because inside a container the config's `127.0.0.1` would be
+  unreachable. Publish the port to the host's loopback as above, and put a reverse proxy with TLS in front of it
+  ([deploy/nginx.conf.example](deploy/nginx.conf.example)); do not publish it to the internet as it is.
+- **Data.** Keep `/var/lib/ronda` on a volume. A named volume works as is; a bind-mounted directory must be owned by
+  uid `65532`. If `data_dir` is not writable, Ronda refuses to start and says so.
+- **Settings from the environment.** `RONDA_TIMEZONE`, `RONDA_LANGUAGE` and the secrets in
+  [Environment overrides](#configuration) work in a container; the config file is still required.
+- **Health check.** The image declares one (`ronda healthcheck`, which asks `/healthz` over loopback); there is no
+  `curl` in it.
+- **CLI.** `docker exec -e RONDA_API_TOKEN=<token> ronda ronda site list` runs the CLI against the container.
 
 ## Dashboard
 
@@ -585,8 +617,8 @@ To report a vulnerability, see [SECURITY.md](SECURITY.md).
   `events.jsonl`) while Ronda is stopped.
 - The login rate limit counts **per IP address**: if many people share one NAT, or the proxy does not forward the real
   address (`trust_proxy` wrong), one person mistyping repeatedly can lock everyone out for 10 minutes.
-- There is no Docker image, and the installer supports Linux with systemd only. `make build` and `make demo` work
-  on macOS and Linux with Go installed; Windows and macOS servers are not claimed.
+- The installer supports Linux with systemd only (the [Docker image](#docker) runs anywhere Docker does). `make build`
+  and `make demo` work on macOS and Linux with Go installed; Windows and macOS servers are not claimed.
 - Language catalogs: English and Indonesian only; the CLI and its help are English only.
 
 What has and has not been tested is listed honestly in [docs/testing.md](docs/testing.md).

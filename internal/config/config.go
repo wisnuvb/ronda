@@ -119,7 +119,13 @@ func Load(path string) (*Config, error) {
 	if err := dec.Decode(c); err != nil {
 		return nil, fmt.Errorf("%s: %w", path, err)
 	}
-	// The language comes first: every error after this point, validation included, is in it.
+	// The language and zone come first (and may be overridden from the environment, which is how a container sets
+	// them): every error after this point, validation included, is in that language.
+	for dst, key := range map[*string]string{&c.Timezone: "RONDA_TIMEZONE", &c.Language: "RONDA_LANGUAGE"} {
+		if v := Getenv(key); v != "" {
+			*dst = v
+		}
+	}
 	if err := c.ApplyLocale(); err != nil {
 		return nil, fmt.Errorf("%s: %w", path, err)
 	}
@@ -200,6 +206,7 @@ func (c *Config) applyEnv() {
 			*dst = v
 		}
 	}
+	set(&c.Listen, "RONDA_LISTEN")
 	set(&c.API.Token, "RONDA_API_TOKEN")
 	set(&c.HeartbeatURL, "RONDA_HEARTBEAT_URL")
 	set(&c.Auth.PasswordHash, "RONDA_PASSWORD_HASH")

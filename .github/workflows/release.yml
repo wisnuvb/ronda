@@ -16,9 +16,13 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+      - name: read the pinned Go version from go.mod
+        run: echo "GO_VERSION=$(awk '/^toolchain /{sub(/^go/, "", $2); print $2}' go.mod)" >> "$GITHUB_ENV"
       - uses: actions/setup-go@v5
         with:
-          go-version-file: go.mod
+          # The exact toolchain pinned in go.mod, so gofmt, vet, the tests and govulncheck all see the Go that
+          # developers use (gofmt output and the standard library differ between versions).
+          go-version: ${{ env.GO_VERSION }}
       - name: build the tarball (runs the tests first)
         run: make release VERSION="${GITHUB_REF_NAME}"
       - name: checksum
@@ -30,3 +34,38 @@ jobs:
           gh release create "${GITHUB_REF_NAME}" \
             "dist/ronda-${GITHUB_REF_NAME}.tar.gz" dist/SHA256SUMS \
             --title "${GITHUB_REF_NAME}" --generate-notes
+
+  docker:
+    # A multi-architecture image on GitHub's container registry: ghcr.io/<owner>/ronda:<version> and :latest.
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: read the pinned Go version from go.mod
+        run: echo "GO_VERSION=$(awk '/^toolchain /{sub(/^go/, "", $2); print $2}' go.mod)" >> "$GITHUB_ENV"
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=raw,value=latest
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            GO_VERSION=${{ env.GO_VERSION }}
+            VERSION=${{ github.ref_name }}

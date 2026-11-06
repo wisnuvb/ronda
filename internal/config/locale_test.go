@@ -1,6 +1,8 @@
 package config
 
 import (
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -99,5 +101,33 @@ func TestEnvFallsBackToTheOldWebmonNames(t *testing.T) {
 	}
 	if got := Getenv("OTHER_THING"); got != "" {
 		t.Fatalf("only RONDA_ names have a fallback: %q", got)
+	}
+}
+
+// A container sets these from its environment instead of editing the config file.
+func TestListenTimezoneAndLanguageCanComeFromTheEnvironment(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, "config.json")
+	body := `{"api":{"token":"0123456789abcdef0123"},"data_dir":"` + dir + `","listen":"127.0.0.1:9191","timezone":"UTC","language":"en"}`
+	if err := os.WriteFile(path, []byte(body), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = model.SetTimezone("UTC"); _ = i18n.SetLang("en") })
+	t.Setenv("RONDA_LISTEN", "0.0.0.0:9191")
+	t.Setenv("RONDA_TIMEZONE", "Europe/Berlin")
+	t.Setenv("RONDA_LANGUAGE", "id")
+	c, err := Load(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if c.Listen != "0.0.0.0:9191" || c.Timezone != "Europe/Berlin" || c.Language != "id" {
+		t.Fatalf("env must win over the file: %+v", c)
+	}
+	if model.Loc().String() != "Europe/Berlin" || i18n.Lang() != "id" {
+		t.Fatalf("Load must switch the program's zone and language: %s %s", model.Loc(), i18n.Lang())
+	}
+	t.Setenv("RONDA_TIMEZONE", "Mars/Olympus")
+	if _, err := Load(path); err == nil {
+		t.Fatal("an invalid RONDA_TIMEZONE must be refused like an invalid timezone in the file")
 	}
 }

@@ -42,7 +42,7 @@ func TestReportCommand(t *testing.T) {
 
 func TestReportIsReadOnlySoEveryGroupMemberMayAskForIt(t *testing.T) {
 	e := startAdmins(t, nil, []int64{7})
-	if r := e.sayIn(t, 8, "supergroup", "/report"); strings.Contains(r, "ronda admins") || !strings.Contains(strings.ToLower(r), "weekly report") {
+	if r := e.sayIn(t, 8, "supergroup", "/report"); strings.Contains(r, "Ronda admins") || !strings.Contains(strings.ToLower(r), "weekly report") {
 		t.Fatalf("a plain member may read the report: %q", r)
 	}
 	if mutating["laporan"] || mutating["report"] || mutating[primary("laporan")] {

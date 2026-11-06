@@ -1,0 +1,11 @@
+.git
+.github
+bin
+dist
+data
+config.json
+.secrets
+.claude
+docs
+*.md
+!README.md

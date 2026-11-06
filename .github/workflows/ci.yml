@@ -13,9 +13,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: read the pinned Go version from go.mod
+        run: echo "GO_VERSION=$(awk '/^toolchain /{sub(/^go/, "", $2); print $2}' go.mod)" >> "$GITHUB_ENV"
       - uses: actions/setup-go@v5
         with:
-          go-version-file: go.mod
+          # The exact toolchain pinned in go.mod, so gofmt, vet, the tests and govulncheck all see the Go that
+          # developers use (gofmt output and the standard library differ between versions).
+          go-version: ${{ env.GO_VERSION }}
       - name: gofmt
         run: |
           unformatted=$(gofmt -l .)
@@ -27,9 +31,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: read the pinned Go version from go.mod
+        run: echo "GO_VERSION=$(awk '/^toolchain /{sub(/^go/, "", $2); print $2}' go.mod)" >> "$GITHUB_ENV"
       - uses: actions/setup-go@v5
         with:
-          go-version-file: go.mod
+          # The exact toolchain pinned in go.mod, so gofmt, vet, the tests and govulncheck all see the Go that
+          # developers use (gofmt output and the standard library differ between versions).
+          go-version: ${{ env.GO_VERSION }}
       - name: static Linux binaries
         run: make build-linux build-arm64
 
@@ -38,7 +46,31 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: read the pinned Go version from go.mod
+        run: echo "GO_VERSION=$(awk '/^toolchain /{sub(/^go/, "", $2); print $2}' go.mod)" >> "$GITHUB_ENV"
       - uses: actions/setup-go@v5
         with:
-          go-version-file: go.mod
+          # The exact toolchain pinned in go.mod, so gofmt, vet, the tests and govulncheck all see the Go that
+          # developers use (gofmt output and the standard library differ between versions).
+          go-version: ${{ env.GO_VERSION }}
       - run: make vuln
+
+  docker:
+    # The image builds, starts, and answers its own health check.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: read the pinned Go version from go.mod
+        run: echo "GO_VERSION=$(awk '/^toolchain /{sub(/^go/, "", $2); print $2}' go.mod)" >> "$GITHUB_ENV"
+      - name: build the image
+        run: docker build --build-arg GO_VERSION="$GO_VERSION" -t ronda:ci .
+      - name: smoke test
+        run: |
+          printf '{"api":{"token":"0123456789abcdef0123456789abcdef"}}' > "$RUNNER_TEMP/config.json"
+          chmod 644 "$RUNNER_TEMP/config.json"
+          docker run -d --name ronda -p 127.0.0.1:9191:9191 -v "$RUNNER_TEMP/config.json:/etc/ronda/config.json:ro" \
+            --read-only --cap-drop ALL ronda:ci
+          for i in $(seq 1 20); do curl -fsS http://127.0.0.1:9191/healthz && break; sleep 1; done
+          curl -fsS http://127.0.0.1:9191/healthz
+          docker exec ronda /usr/local/bin/ronda healthcheck
+          docker logs ronda

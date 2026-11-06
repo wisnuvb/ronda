@@ -65,6 +65,22 @@ and is updated as testing changes.
     migration survives a restart, and the rollback restores the old owner and removes the drop-in.
 - The amd64 binary was run in an *emulated* x86_64 container.
 
+## Docker image
+
+- The image was built on an arm64 host (Docker Desktop) and run with the settings of `deploy/docker-compose.yml`: read-only
+  root filesystem, all capabilities dropped, `no-new-privileges`, the unprivileged user `65532`, a named volume for
+  `/var/lib/ronda`, and a config file mounted read-only.
+  - Its health check reported `healthy`; `/healthz` answered from the host.
+  - A site added through the API was still there after `docker restart`.
+  - `RONDA_TIMEZONE` and `RONDA_LANGUAGE` took effect (`/app-config.js` and the startup log showed them).
+  - An HTTPS check run from inside the image succeeded, which shows the CA certificates are present.
+  - The image is about 3.4 MB.
+- A `data_dir` outside `/var/lib/ronda` was tested in a real systemd container (Ubuntu 24.04 arm64): without a drop-in
+  the service now refuses to start and the journal says why; `install.sh` warns when the directory exists but is not owned
+  by `ronda` (it never changes the ownership of a directory you chose), and creates the directory and the
+  `ReadWritePaths` drop-in when it does not exist, after which a site written to it survives a restart. The migration
+  scenarios were repeated afterwards with the same results.
+
 ## Dashboard
 
 - The dashboard was checked in Chromium at desktop width and at 375 px, in light and dark themes, including creating a
@@ -142,3 +158,8 @@ the numbers will differ.
 - The browser's file-saving action for the Export download.
 - The migration from `webmon` on amd64 hardware or on Ubuntu releases other than 24.04, and the warning printed when the old
   unit sets environment variables through a drop-in or an `EnvironmentFile`.
+- The Docker image on amd64 (only the arm64 image was run), and the image built from the published registry.
+- The `docker` and `release` jobs of the GitHub workflows: their YAML was validated and the Docker commands were run by
+  hand, but the workflows themselves had not run when this was written. The first CI run found two problems (a `gofmt`
+  version mismatch and `make vuln` using an older Go); both are fixed but not yet seen passing on GitHub.
+- `deploy/docker-compose.yml` was validated with `docker compose config`; `docker compose up` was not run.

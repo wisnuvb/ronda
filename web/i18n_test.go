@@ -281,9 +281,9 @@ console.log([
   sched.describeWindow({ days: [0, 1, 2, 3, 4, 5, 6], start: '03:30', minutes: 30 }),
   fmt.weekdayName(1, 'short'), fmt.weekdayName(0, 'long'),
 ].join(' | '));`
-	en := "en | Cancel | Not in any catalog 7 | Sign in to ronda | 99.50% | 1.5 s | 250 ms | 4 min 12 s | 1 min ago | 2 hours | 1 week | 90 seconds | 30 days | " +
+	en := "en | Cancel | Not in any catalog 7 | Sign in to Ronda | 99.50% | 1.5 s | 250 ms | 4 min 12 s | 1 min ago | 2 hours | 1 week | 90 seconds | 30 days | " +
 		"Every Saturday and Sunday at 02:00, for 2 hours | Every day at 03:30, for 30 minutes | Mon | Sunday"
-	id := "id | Batal | Not in any catalog 7 | Masuk ke ronda | 99,50% | 1,5 dtk | 250 ms | 4 mnt 12 dtk | 1 mnt lalu | 2 jam | 1 minggu | 90 detik | 30 hari | " +
+	id := "id | Batal | Not in any catalog 7 | Masuk ke Ronda | 99,50% | 1,5 dtk | 250 ms | 4 mnt 12 dtk | 1 mnt lalu | 2 jam | 1 minggu | 90 detik | 30 hari | " +
 		"Setiap Sabtu dan Minggu pukul 02:00, selama 2 jam | Setiap hari pukul 03:30, selama 30 menit | Sen | Minggu"
 	if got := runNode(t, map[string]string{"lang": "en", "timezone": "UTC"}, script); got != en {
 		t.Errorf("English:\n got  %s\n want %s", got, en)

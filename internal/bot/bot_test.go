@@ -205,10 +205,10 @@ func TestGroupMembersCannotChangeThingsUnlessAdmin(t *testing.T) {
 	count := func() int { return len(e.reg.List()) }
 
 	// A plain member of the group may read...
-	if r := e.sayIn(t, member, "supergroup", "/status"); strings.Contains(r, "ronda admins") {
+	if r := e.sayIn(t, member, "supergroup", "/status"); strings.Contains(r, "Ronda admins") {
 		t.Fatalf("read-only commands must work for every member: %q", r)
 	}
-	if r := e.sayIn(t, member, "group", "/list"); strings.Contains(r, "ronda admins") {
+	if r := e.sayIn(t, member, "group", "/list"); strings.Contains(r, "Ronda admins") {
 		t.Fatalf("/list must work for every member: %q", r)
 	}
 	// ...but every command that changes something is refused, and nothing changes.
@@ -218,7 +218,7 @@ func TestGroupMembersCannotChangeThingsUnlessAdmin(t *testing.T) {
 		"/tambah https://baru.contoh.com", "/hapus Toko ya", "/jeda Toko", "/lanjut Toko", "/pemeliharaan Toko 1j", "/akhiri Toko",
 		"/delete Toko yes", "/endmaintenance Toko",
 	} {
-		if r := e.sayIn(t, member, "supergroup", cmd); !strings.Contains(r, "ronda admins") {
+		if r := e.sayIn(t, member, "supergroup", cmd); !strings.Contains(r, "Ronda admins") {
 			t.Fatalf("%s from a member must be refused, got %q", cmd, r)
 		}
 	}
@@ -229,21 +229,21 @@ func TestGroupMembersCannotChangeThingsUnlessAdmin(t *testing.T) {
 		t.Fatalf("a refused command changed the site: %+v", s)
 	}
 	// Positive control: the same command from the admin in the same group works.
-	if r := e.sayIn(t, admin, "supergroup", "/add https://baru.contoh.com Baru"); strings.Contains(r, "ronda admins") || count() != 2 {
+	if r := e.sayIn(t, admin, "supergroup", "/add https://baru.contoh.com Baru"); strings.Contains(r, "Ronda admins") || count() != 2 {
 		t.Fatalf("the admin must be able to add: %q (%d sites)", r, count())
 	}
 	// A private chat needs no admin entry.
-	if r := e.sayIn(t, member, "private", "/remove Baru yes"); strings.Contains(r, "ronda admins") || count() != 1 {
+	if r := e.sayIn(t, member, "private", "/remove Baru yes"); strings.Contains(r, "Ronda admins") || count() != 1 {
 		t.Fatalf("a private chat must be able to delete: %q (%d sites)", r, count())
 	}
 }
 
 func TestGroupWithoutAnyAdminIsReadOnlyAndUnknownChatTypeFailsClosed(t *testing.T) {
 	e := startAdmins(t, nil, nil)
-	if r := e.sayIn(t, 7, "group", "/add https://x.contoh.com"); !strings.Contains(r, "ronda admins") {
+	if r := e.sayIn(t, 7, "group", "/add https://x.contoh.com"); !strings.Contains(r, "Ronda admins") {
 		t.Fatalf("with no admins configured a group must be read-only, got %q", r)
 	}
-	if r := e.sayIn(t, 7, "", "/tambah https://x.contoh.com"); !strings.Contains(r, "ronda admins") {
+	if r := e.sayIn(t, 7, "", "/tambah https://x.contoh.com"); !strings.Contains(r, "Ronda admins") {
 		t.Fatalf("a missing chat type must not be trusted as private, got %q", r)
 	}
 	if n := len(e.reg.List()); n != 0 {

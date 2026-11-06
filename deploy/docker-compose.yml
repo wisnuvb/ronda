@@ -1,0 +1,28 @@
+# Ronda in Docker. Put a config.json next to this file (start from config.example.json; the data_dir in it must be
+# /var/lib/ronda, which is the default), then:  docker compose up -d
+#
+# The dashboard is published on the host's loopback only. To reach it from elsewhere put a reverse proxy with TLS in
+# front (see nginx.conf.example), or use an SSH tunnel. Do not publish port 9191 to the internet as it is.
+services:
+  ronda:
+    image: ghcr.io/wisnuvb/ronda:latest
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:9191:9191"
+    volumes:
+      - ./config.json:/etc/ronda/config.json:ro
+      - ronda-data:/var/lib/ronda
+    environment:
+      # Optional overrides of the config file (a secret such as the API token is better kept out of it):
+      # RONDA_API_TOKEN: ...
+      # RONDA_TIMEZONE: Europe/Berlin
+      # RONDA_LANGUAGE: en
+      GOMEMLIMIT: 192MiB
+    mem_limit: 256m
+    read_only: true
+    cap_drop: [ALL]
+    security_opt:
+      - no-new-privileges:true
+
+volumes:
+  ronda-data:

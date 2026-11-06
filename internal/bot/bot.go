@@ -219,7 +219,7 @@ func (b *Bot) handle(ctx context.Context, u update) {
 	if mutating[name] && u.Message.Chat.Type != "private" && !b.admins[u.Message.From.ID] {
 		log.Printf("bot: /%s from user %d in chat %s refused; that user id is not in notify.telegram_admin_ids",
 			cmd, u.Message.From.ID, chat)
-		reply = i18n.T("⚠️ In a group, commands that change data are for ronda admins only. You can still use /status, /list and /check.")
+		reply = i18n.T("⚠️ In a group, commands that change data are for Ronda admins only. You can still use /status, /list and /check.")
 	} else {
 		reply = b.run(ctx, name, fields[1:])
 	}
@@ -230,7 +230,7 @@ func (b *Bot) handle(ctx context.Context, u update) {
 }
 
 func helpText() string {
-	return i18n.T(`<b>ronda</b> — commands:
+	return i18n.T(`<b>Ronda</b> — commands:
 /status — summary, and the sites that are down
 /list — all sites
 /report [<i>daily</i>|<i>weekly</i>] — summary of uptime, incidents and certificates (default: weekly)

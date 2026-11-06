@@ -15,7 +15,7 @@ func init() {
 
 		// monitor
 		"The job called /fail: it knows its own run did not succeed. Check that job's log.":              "Pekerjaan memanggil /fail: ia sendiri tahu bahwa prosesnya tidak berhasil. Lihat log pekerjaan itu.",
-		"No ping within %s (interval + grace). The job may have failed, not run, or cannot reach ronda.": "Tidak ada ping dalam %s (interval + toleransi). Pekerjaan mungkin gagal, tidak berjalan, atau tidak bisa menjangkau ronda.",
+		"No ping within %s (interval + grace). The job may have failed, not run, or cannot reach Ronda.": "Tidak ada ping dalam %s (interval + toleransi). Pekerjaan mungkin gagal, tidak berjalan, atau tidak bisa menjangkau Ronda.",
 		"%d days":    "%d hari",
 		"%d hours":   "%d jam",
 		"%d minutes": "%d menit",

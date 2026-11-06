@@ -6,6 +6,23 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- **Docker image** (`Dockerfile`, `deploy/docker-compose.yml`): `FROM scratch`, about 3.5 MB, unprivileged user, works
+  with a read-only root filesystem. The release workflow publishes it for `linux/amd64` and `linux/arm64` to
+  `ghcr.io/wisnuvb/ronda`.
+- `ronda healthcheck`: exit status 0 if a running instance answers `/healthz` (used by the image's health check).
+- Environment overrides `RONDA_LISTEN`, `RONDA_TIMEZONE` and `RONDA_LANGUAGE`.
+
+### Fixed
+
+- Ronda refuses to start, with a message that says why, when `data_dir` is not writable. Before, it started, looked
+  healthy and lost every change.
+- `install.sh` adds a systemd drop-in (`ReadWritePaths`) when the config's `data_dir` is not `/var/lib/ronda`, for any
+  install and not only a migrated one.
+- `make vuln` and CI use the Go toolchain pinned in `go.mod`; with an older Go, govulncheck failed to read the standard
+  library.
+
 ## [0.1.0] - First public release
 
 The first public release. It renames the project from its working name **webmon** to **Ronda**, and

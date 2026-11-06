@@ -428,7 +428,7 @@ func (m *Monitor) loopPush(ctx context.Context, s model.Site, pings <-chan pingE
 
 		case <-timer.C:
 			res := model.Result{Time: m.now().UnixMilli(), Kind: model.KindMissed, Error: "ping not received",
-				Hint: i18n.T("No ping within %s (interval + grace). The job may have failed, not run, or cannot reach ronda.",
+				Hint: i18n.T("No ping within %s (interval + grace). The job may have failed, not run, or cannot reach Ronda.",
 					fmtPeriod(interval+grace))}
 			// If ronda itself has lost the network, pings could not have arrived: hold the alert, as for any check.
 			netOK := m.opt.Control.Up(ctx)

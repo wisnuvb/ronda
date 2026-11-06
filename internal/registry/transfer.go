@@ -104,10 +104,10 @@ func (r *Registry) Import(data []byte, dryRun bool) (ImportResult, error) {
 	}
 	dec := json.NewDecoder(bytes.NewReader(data))
 	if err := dec.Decode(&file); err != nil {
-		return ImportResult{}, invalid(i18n.T("the file is not a ronda export (JSON): %v", err))
+		return ImportResult{}, invalid(i18n.T("the file is not a Ronda export (JSON): %v", err))
 	}
 	if file.Version > ExportVersion {
-		return ImportResult{}, invalid(i18n.T("the file was made by a newer ronda (format %d); update ronda first", file.Version))
+		return ImportResult{}, invalid(i18n.T("the file was made by a newer Ronda (format %d); update Ronda first", file.Version))
 	}
 	if len(file.Sites) == 0 {
 		return ImportResult{}, invalid(i18n.T("the file contains no sites"))
