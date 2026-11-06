@@ -64,6 +64,14 @@ func Open(dir string) (*Registry, error) {
 	if err := os.MkdirAll(dir, 0o750); err != nil {
 		return nil, err
 	}
+	// Fail now, loudly, rather than start and lose every change at the next restart. A read-only data_dir is the
+	// classic way to get there: under systemd the unit only allows writes to /var/lib/ronda (ProtectSystem=strict).
+	probe, err := os.CreateTemp(dir, ".write-test-*")
+	if err != nil {
+		return nil, fmt.Errorf("data_dir %s is not writable: %w (under systemd, add ReadWritePaths=%s in a drop-in for ronda.service; install.sh does this when it sees a custom data_dir)", dir, err, dir)
+	}
+	probe.Close()
+	os.Remove(probe.Name())
 	r := &Registry{path: filepath.Join(dir, "sites.json"), changed: make(chan struct{}, 1)}
 	b, err := os.ReadFile(r.path)
 	switch {

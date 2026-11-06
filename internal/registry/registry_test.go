@@ -536,3 +536,26 @@ func TestByTokenAndRotation(t *testing.T) {
 		t.Fatalf("%v", err)
 	}
 }
+
+// A data_dir the process cannot write to must stop the start with a message that says why, instead of letting
+// the program run and silently lose every change.
+func TestOpenRefusesAnUnwritableDataDir(t *testing.T) {
+	if os.Geteuid() == 0 {
+		t.Skip("root can write anywhere, so the directory cannot be made unwritable")
+	}
+	dir := t.TempDir()
+	if err := os.Chmod(dir, 0o500); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = os.Chmod(dir, 0o700) })
+	_, err := Open(dir)
+	if err == nil {
+		t.Fatal("Open must refuse a data_dir it cannot write to")
+	}
+	if !strings.Contains(err.Error(), "not writable") || !strings.Contains(err.Error(), "ReadWritePaths") {
+		t.Fatalf("the error should say what is wrong and how to fix it: %v", err)
+	}
+	if _, err := Open(t.TempDir()); err != nil {
+		t.Fatalf("a writable data_dir must still open: %v", err)
+	}
+}

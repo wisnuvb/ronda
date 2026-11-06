@@ -126,14 +126,7 @@ migrate_legacy() {
   else
     MIGRATED_DATA=$src
     run chown -R "$SVC_USER:$SVC_USER" "$src"
-    # The unit only lets the service write to its own state directory (ProtectSystem=strict). Without this
-    # drop-in the service would start, look healthy, and fail every write to a data_dir somewhere else.
-    run install -d -m 0755 "$DROPIN_DIR"
-    write_file "$DROPIN_DIR/data-dir.conf" 0644 root:root <<DROPIN
-[Service]
-ReadWritePaths=$src
-DROPIN
-    say "  data_dir is $src, not the default: it stays there, now belongs to the $SVC_USER user, and the service may write to it ($DROPIN_DIR/data-dir.conf)"
+    say "  data_dir is $src, not the default: it stays there and now belongs to the $SVC_USER user"
   fi
   # webmon always ran in WIB and in Indonesian. A migrated install keeps behaving that way: without these keys it
   # would fall back to UTC and English, and the clock times of its maintenance windows and reports would shift.
@@ -178,6 +171,33 @@ finish_legacy() {
     say "  left for you to delete once you have checked Ronda: $LEGACY_CONF_DIR and $LEGACY_DATA_DIR"
   fi
   say "  Dashboard sessions ended once (the session cookie is now called ronda_session): log in again."
+}
+
+# The unit only lets the service write to /var/lib/ronda (ProtectSystem=strict). A config whose data_dir is
+# somewhere else needs a drop-in that allows it; without one the service refuses to start ("data_dir ... is not
+# writable") instead of running and losing every change. Applies to any install, not only a migrated one.
+ensure_data_dir_access() {
+  local dir
+  dir=$(sed -n 's/.*"data_dir"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$CONF" 2>/dev/null | head -1)
+  dir=${dir%/}
+  if [ -z "$dir" ] || [ "$dir" = "$DATA_DIR" ]; then return 0; fi
+  case $dir in
+    /*) ;;
+    *) warn "data_dir ($dir) is not an absolute path; the service cannot be given access to it"; return 0 ;;
+  esac
+  case $dir in
+    *[!A-Za-z0-9_./+-]*) warn "data_dir ($dir) has characters this installer will not put in a unit file; add ReadWritePaths= for it to a drop-in of ronda.service yourself"; return 0 ;;
+  esac
+  [ -d "$dir" ] || run install -d -m 0750 -o "$SVC_USER" -g "$SVC_USER" "$dir"
+  if [ -d "$dir" ] && [ "$(stat -c %U "$dir")" != "$SVC_USER" ]; then
+    warn "$dir is not owned by $SVC_USER; give it access (chown -R $SVC_USER:$SVC_USER $dir) or the service will not start"
+  fi
+  run install -d -m 0755 "$DROPIN_DIR"
+  write_file "$DROPIN_DIR/data-dir.conf" 0644 root:root <<DROPIN
+[Service]
+ReadWritePaths=$dir
+DROPIN
+  say "  data_dir is $dir, not $DATA_DIR: the service may write to it ($DROPIN_DIR/data-dir.conf)"
 }
 
 # ---------------------------------------------------------------- check
@@ -242,6 +262,7 @@ do_uninstall() {
   say "Uninstalling ronda:"
   have_systemd && { run systemctl disable --now ronda 2>/dev/null || true; }
   run rm -f "$UNIT" "$BIN" "$BIN.prev"
+  run rm -rf "$DROPIN_DIR"
   have_systemd && run systemctl daemon-reload
   if [ "$PURGE" = 1 ]; then
     run rm -rf "$CONF_DIR" "$DATA_DIR"
@@ -331,6 +352,7 @@ CONFIG
     "$BIN.new" config-check -config "$CONF" >/dev/null || { rm -f "$BIN.new"; abort_legacy; die "the config is invalid; fix $CONF (run: $new config-check -config $CONF). The install was cancelled and nothing was changed."; }
     [ "$upgrade" = 1 ] && cp -p "$BIN" "$BIN.prev"
   fi
+  ensure_data_dir_access
   run mv -f "$BIN.new" "$BIN"
   run install -m 0644 "$HERE/ronda.service" "$UNIT"
   run systemctl daemon-reload
