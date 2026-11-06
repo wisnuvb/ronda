@@ -6,6 +6,8 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-11-06
+
 ### Added
 
 - **Public demo mode**: `ronda demo -public` serves the synthetic dashboard read-only (every change is refused with 403,
@@ -132,5 +134,6 @@ Ronda was developed in ten internal stages under its working name, webmon. They 
 - **Stage 9:** daily and weekly reports and the bot's report command.
 - **Stage 10:** per-site recipients (each client hears only about their own sites, reports included).
 
-[Unreleased]: https://github.com/wisnuvb/ronda/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/wisnuvb/ronda/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/wisnuvb/ronda/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/wisnuvb/ronda/releases/tag/v0.1.0
