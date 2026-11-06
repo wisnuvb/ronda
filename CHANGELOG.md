@@ -10,17 +10,28 @@ All notable changes to this project are documented here. The format follows
 
 - **Public demo mode**: `ronda demo -public` serves the synthetic dashboard read-only (every change is refused with 403,
   `/ping/` too) and shows a "Live demo" banner. Meant to be published behind a reverse proxy.
-- **Landing page** (`site/`) and the files to host it with the demo (`deploy/site/`, `docs/hosting-landing-and-demo.md`,
-  `make deploy-site`).
 - **Docker image** (`Dockerfile`, `deploy/docker-compose.yml`): `FROM scratch`, about 3.5 MB, unprivileged user, works
   with a read-only root filesystem. The release workflow publishes it for `linux/amd64` and `linux/arm64` to
   `ghcr.io/wisnuvb/ronda`.
 - `ronda healthcheck`: exit status 0 if a running instance answers `/healthz` (used by the image's health check).
 - Environment overrides `RONDA_LISTEN`, `RONDA_TIMEZONE` and `RONDA_LANGUAGE`.
 
+- **Packages usable from other Go programs** (see [docs/library.md](docs/library.md)): `model`, `check`, `monitor`,
+  `notify`, `report`, `history`, `eventlog`, `schedule` and `i18n` moved out of `internal/` to the top level of the
+  module, and the site validation moved from `internal/registry` to the new `sitespec` package (`sitespec.Normalize`).
+- `monitor` takes its storage through interfaces (`SiteSource`, `History`, `EventLog`, `StateStore`); the file-based
+  behaviour is unchanged when they are left unset.
+- `check.NewStrict()` (a checker that ignores `allow_private` on every check type), `check.Guard` and
+  `check.GuardedClient`, for services that probe or call addresses chosen by strangers.
+
 ### Changed
 
 - The README and the install instructions now start from the release tarball (with `SHA256SUMS`) instead of building it.
+- Breaking for programs that embed the packages (none are published yet): import paths lost `internal/`,
+  `monitor.Options.Registry` is now `Sites`, and `registry.InvalidError`, `registry.ErrNotFound` and the site-type
+  constants are now `model.InvalidError`, `model.ErrNotFound` and `sitespec.Type*`.
+- The landing page and the files for hosting the public demo are no longer part of this repository. `ronda demo -public`
+  itself is unchanged.
 
 ### Fixed
 

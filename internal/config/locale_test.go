@@ -6,8 +6,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/wisnuvb/ronda/internal/i18n"
-	"github.com/wisnuvb/ronda/internal/model"
+	"github.com/wisnuvb/ronda/i18n"
+	"github.com/wisnuvb/ronda/model"
 )
 
 const tok = `"api":{"token":"0123456789abcdef0123"}`

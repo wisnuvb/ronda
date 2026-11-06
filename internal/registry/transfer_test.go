@@ -2,12 +2,13 @@ package registry
 
 import (
 	"encoding/json"
+	"github.com/wisnuvb/ronda/sitespec"
 	"reflect"
 	"strings"
 	"testing"
 	"time"
 
-	"github.com/wisnuvb/ronda/internal/model"
+	"github.com/wisnuvb/ronda/model"
 )
 
 func openTemp(t *testing.T) *Registry {
@@ -37,7 +38,7 @@ func fixtures() []model.Site {
 // stable strips what is allowed to differ between two installations holding the same configuration.
 func stable(s model.Site) model.Site {
 	s.ID, s.Created, s.MaintenanceUntil, s.MaintenanceSkipUntil, s.PushToken = "", 0, 0, 0, ""
-	if s.Type == TypePush {
+	if s.Type == sitespec.TypePush {
 		s.URL = ""
 	}
 	return s
@@ -248,7 +249,7 @@ func TestImportRefusesBadFiles(t *testing.T) {
 	} {
 		if _, err := r.Import([]byte(body), false); err == nil {
 			t.Errorf("%s must be refused", name)
-		} else if _, ok := err.(*InvalidError); !ok {
+		} else if _, ok := err.(*model.InvalidError); !ok {
 			t.Errorf("%s: %T is not an InvalidError, so the API would answer 500", name, err)
 		}
 	}

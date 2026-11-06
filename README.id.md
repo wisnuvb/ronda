@@ -166,8 +166,9 @@ sudo ./install.sh --set-password
 
 Tarball yang sama bisa Anda bangun sendiri dengan `make release` (lihat [Mulai cepat](#mulai-cepat)).
 
-Untuk menerbitkan demo baca-saja milik Anda sendiri, jalankan `ronda demo -public` di belakang reverse proxy; lihat
-[docs/hosting-landing-and-demo.md](docs/hosting-landing-and-demo.md) (dalam bahasa Inggris).
+Untuk menerbitkan demo baca-saja milik Anda sendiri, jalankan `ronda demo -public` di belakang reverse proxy. Demo ini
+menyajikan data sintetis, hanya mendengarkan di loopback, dan menolak setiap perubahan (hanya `GET` dan `HEAD`, termasuk
+`/ping/`), jadi jangan pernah mengarahkannya ke data asli.
 
 | Perintah | Fungsi |
 |---|---|
@@ -660,19 +661,22 @@ make build       # bin/ronda untuk mesin ini
 make release     # tes, lalu dist/ronda-<versi>.tar.gz berisi biner linux amd64 + arm64 dan installer
 ```
 
-**Tata letak `internal/`**
+**Tata letak kode sumber**
+
+Paket di tingkat atas dapat di-import program Go lain (lihat [docs/library.md](docs/library.md), dalam bahasa Inggris);
+yang di bawah `internal/` hanya milik program ini.
 
 | Paket | Isi |
 |---|---|
-| `config`, `model` | berkas config, nilai bawaan, validasi, override environment; tipe bersama dan zona waktu yang dikonfigurasi |
-| `registry` | daftar situs tersimpan: validasi, impor/ekspor, pemeliharaan |
-| `check` | pemeriksa HTTP, TCP, dan DNS dengan diagnosis dan penjaga SSRF |
-| `monitor` | penjadwalan, state machine, pengingat, peringatan sertifikat, monitor push, penyimpanan |
+| `model`, `sitespec` | tipe bersama dan zona waktu yang dikonfigurasi; aturan tentang bentuk sebuah situs (tipe, nilai bawaan, batas) |
+| `check` | pemeriksa HTTP, TCP, dan DNS dengan diagnosis dan penjaga SSRF (`NewStrict` untuk layanan yang memeriksa alamat orang asing) |
+| `monitor` | penjadwalan, state machine, pengingat, peringatan sertifikat, monitor push; penyimpanan lewat interface kecil (`SiteSource`, `History`, `EventLog`, `StateStore`) |
 | `history`, `eventlog` | hasil mentah dan rekap per jam; arsip insiden permanen (`events.jsonl`) |
-| `notify`, `report`, `bot` | pengiriman Telegram/webhook, antrean, ringkasan, perutean; laporan harian/mingguan; bot Telegram |
-| `schedule` | jendela pemeliharaan mingguan dan penanganan `HH:MM` dengan DST |
-| `api`, `auth` | API HTTP, sesi, halaman status publik; hash kata sandi dan pembatas login |
-| `heartbeat`, `i18n`, `integration` | ping heartbeat keluar; katalog pesan; tes perutean lintas paket |
+| `notify`, `report` | pengiriman Telegram/webhook, antrean, ringkasan, perutean; laporan harian/mingguan |
+| `schedule`, `i18n` | jendela pemeliharaan mingguan dan penanganan `HH:MM` dengan DST; katalog pesan |
+| `internal/config`, `internal/registry` | berkas config, nilai bawaan, validasi, override environment; daftar situs tersimpan (`sites.json`), impor/ekspor |
+| `internal/api`, `internal/auth`, `internal/bot` | API HTTP, sesi, halaman status publik; hash kata sandi dan pembatas login; bot Telegram |
+| `internal/heartbeat`, `internal/integration` | ping heartbeat keluar; tes perutean lintas paket |
 
 Di tempat lain: `cmd/ronda` (CLI), `web/static` (dashboard dan halaman publik yang tertanam, ES module biasa, tanpa
 langkah build), `deploy` (installer, unit systemd, contoh config, contoh nginx).
@@ -680,14 +684,14 @@ langkah build), `deploy` (installer, unit systemd, contoh config, contoh nginx).
 **Menambah bahasa.** Teks Inggris sebuah pesan adalah kuncinya, jadi bahasa Inggris tidak butuh katalog dan terjemahan
 yang belum ada jatuh ke bahasa Inggris. Bahasa lain berupa katalog teks Inggris ke terjemahan:
 
-- Server: `internal/i18n/id_*.go`, satu berkas per area, masing-masing memanggil
+- Server: `i18n/id_*.go`, satu berkas per area, masing-masing memanggil
   `i18n.Register("id", map[string]string{...})` dari `init()`. Pesan ditandai di kode dengan `i18n.T(...)` (atau
   `i18n.N(...)` untuk menandai tanpa menerjemahkannya dulu). Bahasa baru mendapat berkasnya sendiri yang didaftarkan
   dengan kodenya; `language` lalu menerima kode itu.
 - Dashboard: `web/static/i18n-id.js`, JSON ketat setelah `export default`, satu entri per baris. Daftarkan katalog baru
   di peta `CATALOGS` (dan baris locale) pada `web/static/i18n.js`. Placeholder seperti `{name}` dan `%s` harus
   dipertahankan persis seperti di teks Inggris.
-- Tes menjaga kelengkapan (`go test ./internal/i18n ./web`): setiap pesan yang dipakai kode butuh entri di setiap katalog
+- Tes menjaga kelengkapan (`go test ./i18n ./web`): setiap pesan yang dipakai kode butuh entri di setiap katalog
   yang dikirim, terjemahan harus mempertahankan placeholder dan format verb-nya, dan katalog dashboard tidak boleh
   memuat apa pun yang tidak lagi dipakai kode. Jangan merangkai kalimat dari potongan terjemahan; terjemahkan kalimat utuh.
 

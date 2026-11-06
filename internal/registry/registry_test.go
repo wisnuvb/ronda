@@ -3,13 +3,14 @@ package registry
 import (
 	"errors"
 	"fmt"
+	"github.com/wisnuvb/ronda/sitespec"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
 	"time"
 
-	"github.com/wisnuvb/ronda/internal/model"
+	"github.com/wisnuvb/ronda/model"
 )
 
 func open(t *testing.T) (*Registry, string) {
@@ -54,7 +55,7 @@ func TestValidation(t *testing.T) {
 	}
 	for name, s := range bad {
 		_, err := r.Add(s)
-		var inv *InvalidError
+		var inv *model.InvalidError
 		if !errors.As(err, &inv) {
 			t.Errorf("%s: want InvalidError, got %v", name, err)
 		}
@@ -109,7 +110,7 @@ func TestPatch(t *testing.T) {
 	if cur, _ := r.Get(a.ID); cur.IntervalSec != 30 {
 		t.Fatalf("failed patch must not change the site: %+v", cur)
 	}
-	if _, err := r.Patch("nope", []byte(`{}`)); !errors.Is(err, ErrNotFound) {
+	if _, err := r.Patch("nope", []byte(`{}`)); !errors.Is(err, model.ErrNotFound) {
 		t.Fatalf("got %v", err)
 	}
 }
@@ -120,7 +121,7 @@ func TestDelete(t *testing.T) {
 	if err := r.Delete(a.ID); err != nil {
 		t.Fatal(err)
 	}
-	if err := r.Delete(a.ID); !errors.Is(err, ErrNotFound) {
+	if err := r.Delete(a.ID); !errors.Is(err, model.ErrNotFound) {
 		t.Fatalf("got %v", err)
 	}
 	if len(r.List()) != 0 {
@@ -190,10 +191,10 @@ func TestSetMaintenance(t *testing.T) {
 	}
 	for name, bad := range map[string]int64{
 		"in the past": time.Now().Add(-time.Minute).UnixMilli(),
-		"too far":     time.Now().Add(MaxMaintenance + 24*time.Hour).UnixMilli(),
+		"too far":     time.Now().Add(sitespec.MaxMaintenance + 24*time.Hour).UnixMilli(),
 		"negative":    -5,
 	} {
-		var inv *InvalidError
+		var inv *model.InvalidError
 		if _, err := r.SetMaintenance(a.ID, bad); !errors.As(err, &inv) {
 			t.Errorf("%s: want InvalidError, got %v", name, err)
 		}
@@ -201,7 +202,7 @@ func TestSetMaintenance(t *testing.T) {
 	if s, err := r.SetMaintenance(a.ID, 0); err != nil || s.MaintenanceUntil != 0 {
 		t.Fatalf("0 must end maintenance: %+v %v", s, err)
 	}
-	if _, err := r.SetMaintenance("tidak-ada", until); !errors.Is(err, ErrNotFound) {
+	if _, err := r.SetMaintenance("tidak-ada", until); !errors.Is(err, model.ErrNotFound) {
 		t.Fatalf("got %v", err)
 	}
 }
@@ -209,7 +210,7 @@ func TestSetMaintenance(t *testing.T) {
 func TestPatchCannotSmuggleBadMaintenance(t *testing.T) {
 	r, _ := open(t)
 	a, _ := r.Add(model.Site{URL: "https://a.com"})
-	far := time.Now().Add(MaxMaintenance + 48*time.Hour).UnixMilli()
+	far := time.Now().Add(sitespec.MaxMaintenance + 48*time.Hour).UnixMilli()
 	if _, err := r.Patch(a.ID, []byte(fmt.Sprintf(`{"maintenance_until":%d}`, far))); err == nil {
 		t.Fatal("PATCH must apply the same limit")
 	}
@@ -287,7 +288,7 @@ func TestTCPAndDNSValidation(t *testing.T) {
 		"dns_server di tcp":     {URL: "tcp://a.example:25", DNSServer: "1.1.1.1"},
 	}
 	for name, s := range bad {
-		var inv *InvalidError
+		var inv *model.InvalidError
 		if _, err := r.Add(s); !errors.As(err, &inv) {
 			t.Errorf("%s: want InvalidError, got %v", name, err)
 		}
@@ -338,7 +339,7 @@ func TestWeeklyWindowValidationAndStorage(t *testing.T) {
 		"too long":  `{"maintenance_weekly":[{"days":[1],"start":"02:00","minutes":2000}]}`,
 		"duplicate": `{"maintenance_weekly":[{"days":[1,1],"start":"02:00","minutes":60}]}`,
 	} {
-		var inv *InvalidError
+		var inv *model.InvalidError
 		if _, err := r.Patch(a.ID, []byte(body)); !errors.As(err, &inv) {
 			t.Errorf("%s: want InvalidError, got %v", name, err)
 		}
@@ -405,7 +406,7 @@ func TestEndMaintenanceWithNoScheduleLeavesNoSkipMarker(t *testing.T) {
 	if err != nil || got.MaintenanceUntil != 0 || got.MaintenanceSkipUntil != 0 {
 		t.Fatalf("%+v %v", got, err)
 	}
-	if _, err := r.EndMaintenance("tidak-ada"); !errors.Is(err, ErrNotFound) {
+	if _, err := r.EndMaintenance("tidak-ada"); !errors.Is(err, model.ErrNotFound) {
 		t.Fatalf("got %v", err)
 	}
 }
@@ -446,7 +447,7 @@ func TestPushValidation(t *testing.T) {
 	r, _ := open(t)
 	bad := map[string]model.Site{
 		"too frequent":  {Type: "push", IntervalSec: 30},
-		"too rare":      {Type: "push", IntervalSec: MaxPushInterval + 1},
+		"too rare":      {Type: "push", IntervalSec: sitespec.MaxPushInterval + 1},
 		"negative":      {Type: "push", GraceSec: -1},
 		"huge grace":    {Type: "push", GraceSec: 90000},
 		"keyword":       {Type: "push", Keyword: "ok"},
@@ -456,7 +457,7 @@ func TestPushValidation(t *testing.T) {
 		"type mismatch": {Type: "push", URL: "https://a.example"},
 	}
 	for name, s := range bad {
-		var inv *InvalidError
+		var inv *model.InvalidError
 		if _, err := r.Add(s); !errors.As(err, &inv) {
 			t.Errorf("%s: want InvalidError, got %v", name, err)
 		}
@@ -464,7 +465,7 @@ func TestPushValidation(t *testing.T) {
 	if len(r.List()) != 0 {
 		t.Fatal("nothing invalid may be stored")
 	}
-	if s, err := r.Add(model.Site{Type: "push", IntervalSec: MaxPushInterval}); err != nil || s.IntervalSec != MaxPushInterval {
+	if s, err := r.Add(model.Site{Type: "push", IntervalSec: sitespec.MaxPushInterval}); err != nil || s.IntervalSec != sitespec.MaxPushInterval {
 		t.Fatalf("a monthly job must fit: %+v %v", s, err)
 	}
 	// The push-only fields mean nothing on a web site and must not linger there.
@@ -489,7 +490,7 @@ func TestPushIdentityCannotBePatched(t *testing.T) {
 		t.Fatalf("ordinary settings still are: %+v", p)
 	}
 	for _, body := range []string{`{"type":"http","url":"https://a.example"}`, `{"type":"tcp","url":"tcp://a.example:25"}`} {
-		var inv *InvalidError
+		var inv *model.InvalidError
 		if _, err := r.Patch(a.ID, []byte(body)); !errors.As(err, &inv) {
 			t.Errorf("%s: a push site cannot become something else: %v", body, err)
 		}
@@ -532,7 +533,7 @@ func TestByTokenAndRotation(t *testing.T) {
 	if _, err := r.RotateToken(web.ID); err == nil {
 		t.Fatal("a web site has no token to rotate")
 	}
-	if _, err := r.RotateToken("tidak-ada"); !errors.Is(err, ErrNotFound) {
+	if _, err := r.RotateToken("tidak-ada"); !errors.Is(err, model.ErrNotFound) {
 		t.Fatalf("%v", err)
 	}
 }

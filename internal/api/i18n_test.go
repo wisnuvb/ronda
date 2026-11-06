@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/wisnuvb/ronda/internal/i18n"
+	"github.com/wisnuvb/ronda/i18n"
 )
 
 func inIndonesian(t *testing.T) {

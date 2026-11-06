@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/wisnuvb/ronda/internal/model"
+	"github.com/wisnuvb/ronda/model"
 )
 
 func TestNotifyToIsNormalised(t *testing.T) {

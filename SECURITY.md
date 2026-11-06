@@ -24,7 +24,7 @@ Things that are in scope and that we would like to hear about, for example:
 - reading or changing data without being logged in, or leaking a secret (API token, push tokens, Telegram token,
   password hash) through the API, the export file, the logs or the public status page;
 - making Ronda connect to addresses it blocks by default (the private-network, loopback, link-local and cloud-metadata
-  guard in `internal/check`), including through redirects or DNS tricks;
+  guard in `check`), including through redirects or DNS tricks;
 - anything on the public status page (`/status`, `/api/public/status`) that exposes more than names, status, uptime
   and incident times;
 - a way to make the Telegram bot act for someone who is not allowed to use it.

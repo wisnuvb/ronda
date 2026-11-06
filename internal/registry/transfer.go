@@ -8,8 +8,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/wisnuvb/ronda/internal/i18n"
-	"github.com/wisnuvb/ronda/internal/model"
+	"github.com/wisnuvb/ronda/i18n"
+	"github.com/wisnuvb/ronda/model"
+	"github.com/wisnuvb/ronda/sitespec"
 )
 
 // ExportVersion is the format number written into an export. Import refuses a newer one.
@@ -48,7 +49,7 @@ func (r *Registry) Export(includeTokens bool) (Export, error) {
 		if !includeTokens {
 			delete(m, "push_token")
 		}
-		if s.Type == TypePush {
+		if s.Type == sitespec.TypePush {
 			delete(m, "url") // only a label, rebuilt on import
 		}
 		out.Sites = append(out.Sites, m)
@@ -86,7 +87,7 @@ var tokenShape = regexp.MustCompile(`^[0-9a-f]{32}$`)
 // siteKey identifies a site for duplicate detection: the checked address, or for a push site (which
 // has no address) its name.
 func siteKey(s model.Site) string {
-	if s.Type == TypePush {
+	if s.Type == sitespec.TypePush {
 		return "push\x00" + strings.ToLower(s.Name)
 	}
 	return s.Type + "\x00" + strings.ToLower(s.URL)
@@ -148,12 +149,12 @@ func (r *Registry) Import(data []byte, dryRun bool) (ImportResult, error) {
 		s = clone(s)
 		s.ID, s.Created, s.MaintenanceUntil, s.MaintenanceSkipUntil = "", 0, 0, 0
 		s.PushToken = ""
-		if err := Normalize(&s); err != nil {
+		if err := sitespec.Normalize(&s); err != nil {
 			item.Status, item.Reason = ImportInvalid, err.Error()
 			res.add(item)
 			continue
 		}
-		if s.Type == TypePush {
+		if s.Type == sitespec.TypePush {
 			item.URL = ""
 		} else {
 			item.URL = s.URL
@@ -184,7 +185,7 @@ func (r *Registry) Import(data []byte, dryRun bool) (ImportResult, error) {
 		}
 		ids[s.ID] = true
 		s.Created = now
-		if s.Type == TypePush {
+		if s.Type == sitespec.TypePush {
 			s.URL = "push://" + s.ID
 			s.PushToken = newToken()
 			if tokenShape.MatchString(wantToken) && !tokens[wantToken] {

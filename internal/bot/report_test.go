@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/wisnuvb/ronda/internal/model"
+	"github.com/wisnuvb/ronda/model"
 )
 
 func TestReportCommand(t *testing.T) {

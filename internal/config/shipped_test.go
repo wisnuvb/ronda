@@ -53,12 +53,12 @@ func TestShippedExampleConfigHasNoSecrets(t *testing.T) {
 }
 
 // shippedFiles lists every text file that is published with the project and could carry a secret by mistake: the
-// deploy examples, the landing page, the docs and the top-level documents. Images are skipped.
+// deploy examples, the docs and the top-level documents. Images are skipped.
 func shippedFiles(t *testing.T) []string {
 	t.Helper()
 	root := filepath.Join("..", "..")
 	var files []string
-	for _, dir := range []string{"deploy", "site", "docs", ".github"} {
+	for _, dir := range []string{"deploy", "docs", ".github"} {
 		err := filepath.WalkDir(filepath.Join(root, dir), func(path string, d fs.DirEntry, err error) error {
 			if err != nil {
 				return err
@@ -85,7 +85,7 @@ func shippedFiles(t *testing.T) []string {
 
 func TestShippedFilesHaveNoSecretShapes(t *testing.T) {
 	files := shippedFiles(t)
-	if len(files) < 20 {
+	if len(files) < 10 {
 		t.Fatalf("found only %d files to scan: has the walk broken?", len(files))
 	}
 	for _, f := range files {

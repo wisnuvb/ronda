@@ -13,10 +13,10 @@ import (
 	"strings"
 	"unicode"
 
+	"github.com/wisnuvb/ronda/i18n"
 	"github.com/wisnuvb/ronda/internal/auth"
-	"github.com/wisnuvb/ronda/internal/i18n"
-	"github.com/wisnuvb/ronda/internal/model"
-	"github.com/wisnuvb/ronda/internal/schedule"
+	"github.com/wisnuvb/ronda/model"
+	"github.com/wisnuvb/ronda/schedule"
 )
 
 type Config struct {

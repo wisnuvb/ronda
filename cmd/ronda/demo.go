@@ -6,6 +6,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"github.com/wisnuvb/ronda/sitespec"
 	"log"
 	"math/rand/v2"
 	"net"
@@ -18,12 +19,12 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/wisnuvb/ronda/history"
+	"github.com/wisnuvb/ronda/i18n"
 	"github.com/wisnuvb/ronda/internal/api"
-	"github.com/wisnuvb/ronda/internal/history"
-	"github.com/wisnuvb/ronda/internal/i18n"
-	"github.com/wisnuvb/ronda/internal/model"
-	"github.com/wisnuvb/ronda/internal/monitor"
 	"github.com/wisnuvb/ronda/internal/registry"
+	"github.com/wisnuvb/ronda/model"
+	"github.com/wisnuvb/ronda/monitor"
 	"github.com/wisnuvb/ronda/web"
 )
 
@@ -67,7 +68,7 @@ var demoNames = []string{i18n.N("Online Shop"), i18n.N("Company Blog"), i18n.N("
 	i18n.N("News Site"), i18n.N("Campaign Landing Page"), i18n.N("Internal Wiki"), i18n.N("Documentation"),
 	i18n.N("Production PostgreSQL"), i18n.N("Daily Backup"), i18n.N("Weekly Report"), i18n.N("DNS example.com")}
 
-// Diagnosis texts the demo's pretend failures carry (the real ones come from internal/check).
+// Diagnosis texts the demo's pretend failures carry (the real ones come from check).
 const (
 	hintRefused  = "Connection refused: the server is reachable but nothing is listening on that port (web server stopped, or wrong port)."
 	hintRefused2 = "Connection refused: the server is reachable but nothing is listening on that port."
@@ -306,7 +307,7 @@ func cmdDemo(args []string) error {
 	}
 	writeDemoFile(dir, "state.json", state)
 
-	mon := monitor.New(monitor.Options{Registry: reg, Checker: chk, History: hist, DataDir: dir})
+	mon := monitor.New(monitor.Options{Sites: reg, Checker: chk, History: hist, DataDir: dir})
 	staticFS := web.Static()
 	if *static != "" {
 		staticFS = os.DirFS(*static)
@@ -357,7 +358,7 @@ func writeDemoFile(dir, name string, v any) {
 func demoJobs(ctx context.Context, reg *registry.Registry, mon *monitor.Monitor) {
 	tokens := map[string]string{}
 	for _, s := range reg.List() {
-		if s.Type == registry.TypePush {
+		if s.Type == sitespec.TypePush {
 			tokens[s.Name] = s.PushToken // keyed by the displayed name
 		}
 	}

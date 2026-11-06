@@ -25,8 +25,8 @@ make vuln        # govulncheck, needs network
 
 ## Conventions
 
-- **Messages are translated through `internal/i18n`.** The English text is the key: `i18n.T("Cause: %s", why)`. When you
-  add or change a user-facing message, add the Indonesian text in the matching `internal/i18n/id_*.go` file (the
+- **Messages are translated through `i18n`.** The English text is the key: `i18n.T("Cause: %s", why)`. When you
+  add or change a user-facing message, add the Indonesian text in the matching `i18n/id_*.go` file (the
   completeness test fails otherwise). Dashboard text uses `t('English text {name}', {name})` with the catalog in
   `web/static/i18n-id.js`. Log lines and CLI output are plain English and are not translated.
 - **Times and days follow the configured time zone** (`timezone`), including daylight saving. Never compute a day as
@@ -46,7 +46,7 @@ test (for example a browser or an OS you do not have).
 ## Adding a language
 
 English is the source language; Indonesian is the first translation. To add another, register a catalog in
-`internal/i18n/` (the Go completeness test then lists every server message that still needs a translation) and add a
+`i18n/` (the Go completeness test then lists every server message that still needs a translation) and add a
 matching catalog to `web/static/` (copy `i18n-id.js`, register it in `i18n.js`, and extend the checks in
 `web/i18n_test.go`, which today only cover Indonesian). See *Development* in the README.
 

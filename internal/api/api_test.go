@@ -16,11 +16,11 @@ import (
 	"testing/fstest"
 	"time"
 
+	"github.com/wisnuvb/ronda/history"
 	"github.com/wisnuvb/ronda/internal/auth"
-	"github.com/wisnuvb/ronda/internal/history"
-	"github.com/wisnuvb/ronda/internal/model"
-	"github.com/wisnuvb/ronda/internal/monitor"
 	"github.com/wisnuvb/ronda/internal/registry"
+	"github.com/wisnuvb/ronda/model"
+	"github.com/wisnuvb/ronda/monitor"
 )
 
 const (
@@ -63,7 +63,7 @@ func setup(t *testing.T, mutate ...func(*Options)) *harness {
 		t.Fatal(err)
 	}
 	hist := history.Open("")
-	mon := monitor.New(monitor.Options{Registry: reg, Checker: okChecker{}, History: hist})
+	mon := monitor.New(monitor.Options{Sites: reg, Checker: okChecker{}, History: hist})
 	ctx, cancel := context.WithCancel(context.Background())
 	go mon.Run(ctx)
 

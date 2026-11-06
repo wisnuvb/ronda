@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/wisnuvb/ronda/sitespec"
 	"io"
 	"io/fs"
 	"log"
@@ -19,12 +20,12 @@ import (
 	"sync"
 	"time"
 
+	"github.com/wisnuvb/ronda/history"
+	"github.com/wisnuvb/ronda/i18n"
 	"github.com/wisnuvb/ronda/internal/auth"
-	"github.com/wisnuvb/ronda/internal/history"
-	"github.com/wisnuvb/ronda/internal/i18n"
-	"github.com/wisnuvb/ronda/internal/model"
-	"github.com/wisnuvb/ronda/internal/monitor"
 	"github.com/wisnuvb/ronda/internal/registry"
+	"github.com/wisnuvb/ronda/model"
+	"github.com/wisnuvb/ronda/monitor"
 )
 
 const (
@@ -474,7 +475,7 @@ func (s *Server) list(w http.ResponseWriter, r *http.Request) {
 func (s *Server) get(w http.ResponseWriter, r *http.Request) {
 	v, ok := s.opt.Monitor.View(r.PathValue("id"))
 	if !ok {
-		writeErr(w, http.StatusNotFound, i18n.T(registry.ErrNotFound.Error()))
+		writeErr(w, http.StatusNotFound, i18n.T(model.ErrNotFound.Error()))
 		return
 	}
 	writeJSON(w, http.StatusOK, v)
@@ -577,7 +578,7 @@ func (s *Server) startMaintenance(w http.ResponseWriter, r *http.Request) {
 	if !decode(w, r, &in) {
 		return
 	}
-	maxMin := int(registry.MaxMaintenance / time.Minute)
+	maxMin := int(sitespec.MaxMaintenance / time.Minute)
 	if in.Minutes < 1 || in.Minutes > maxMin {
 		writeErr(w, http.StatusBadRequest, i18n.T("minutes must be 1..%d", maxMin))
 		return
@@ -637,11 +638,11 @@ func (s *Server) check(w http.ResponseWriter, r *http.Request) {
 	if !decode(w, r, &site) {
 		return
 	}
-	if err := registry.Normalize(&site); err != nil {
+	if err := sitespec.Normalize(&site); err != nil {
 		fail(w, err)
 		return
 	}
-	if site.Type == registry.TypePush {
+	if site.Type == sitespec.TypePush {
 		writeErr(w, http.StatusBadRequest, i18n.T("Push sites are not checked from here: they wait for a ping from their job"))
 		return
 	}
@@ -724,9 +725,9 @@ func decode(w http.ResponseWriter, r *http.Request, v any) bool {
 }
 
 func fail(w http.ResponseWriter, err error) {
-	var inv *registry.InvalidError
+	var inv *model.InvalidError
 	switch {
-	case errors.Is(err, registry.ErrNotFound):
+	case errors.Is(err, model.ErrNotFound):
 		writeErr(w, http.StatusNotFound, i18n.T(err.Error()))
 	case errors.As(err, &inv):
 		writeErr(w, http.StatusBadRequest, err.Error())

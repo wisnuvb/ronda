@@ -163,8 +163,8 @@ sudo ./install.sh --set-password
 
 You can build the same tarball yourself with `make release` (see [Quick start](#quick-start)).
 
-To publish a read-only demo of your own, run `ronda demo -public` behind a reverse proxy; see
-[docs/hosting-landing-and-demo.md](docs/hosting-landing-and-demo.md).
+To publish a read-only demo of your own, run `ronda demo -public` behind a reverse proxy. It serves synthetic data, listens
+on loopback only and refuses every change (`GET` and `HEAD` only, `/ping/` included), so never point it at real data.
 
 | Command | What it does |
 |---|---|
@@ -652,19 +652,22 @@ make build       # bin/ronda for this machine
 make release     # test, then dist/ronda-<version>.tar.gz with linux amd64 + arm64 binaries and the installer
 ```
 
-**Layout of `internal/`**
+**Layout of the source**
+
+Packages at the top level are importable by other Go programs (see [docs/library.md](docs/library.md)); the ones under
+`internal/` belong to this program only.
 
 | Package | Contents |
 |---|---|
-| `config`, `model` | config file, defaults, validation, env overrides; shared types and the configured time zone |
-| `registry` | the stored site list: validation, import/export, maintenance |
-| `check` | HTTP, TCP and DNS checkers with diagnosis and the SSRF guard |
-| `monitor` | scheduling, state machine, reminders, certificate warnings, push monitors, persistence |
+| `model`, `sitespec` | shared types and the configured time zone; the rules for what a site may look like (types, defaults, limits) |
+| `check` | HTTP, TCP and DNS checkers with diagnosis and the SSRF guard (`NewStrict` for services that probe strangers' addresses) |
+| `monitor` | scheduling, state machine, reminders, certificate warnings, push monitors; storage through small interfaces (`SiteSource`, `History`, `EventLog`, `StateStore`) |
 | `history`, `eventlog` | raw results and hourly summaries; the permanent incident archive (`events.jsonl`) |
-| `notify`, `report`, `bot` | Telegram/webhook delivery, queue, digests, routing; daily/weekly reports; the Telegram bot |
-| `schedule` | weekly maintenance windows and `HH:MM` handling with daylight saving |
-| `api`, `auth` | HTTP API, sessions, public status page; password hashing and the login rate limiter |
-| `heartbeat`, `i18n`, `integration` | outbound heartbeat; message catalogs; cross-package routing tests |
+| `notify`, `report` | Telegram/webhook delivery, queue, digests, routing; daily/weekly reports |
+| `schedule`, `i18n` | weekly maintenance windows and `HH:MM` handling with daylight saving; message catalogs |
+| `internal/config`, `internal/registry` | config file, defaults, validation, env overrides; the stored site list (`sites.json`), import/export |
+| `internal/api`, `internal/auth`, `internal/bot` | HTTP API, sessions, public status page; password hashing and login limiter; the Telegram bot |
+| `internal/heartbeat`, `internal/integration` | outbound heartbeat; cross-package routing tests |
 
 Elsewhere: `cmd/ronda` (the CLI), `web/static` (the embedded dashboard and public page, plain ES modules, no build
 step), `deploy` (installer, systemd unit, example config, nginx example).
@@ -672,13 +675,13 @@ step), `deploy` (installer, systemd unit, example config, nginx example).
 **Adding a language.** The English text of a message is its key, so English needs no catalog and a missing translation
 falls back to English. Other languages are catalogs of English text to translation:
 
-- Server: `internal/i18n/id_*.go`, one file per area, each calling `i18n.Register("id", map[string]string{...})` from
+- Server: `i18n/id_*.go`, one file per area, each calling `i18n.Register("id", map[string]string{...})` from
   `init()`. Messages are marked in code with `i18n.T(...)` (or `i18n.N(...)` to mark one without translating it yet). A new
   language gets its own files registered under its code; `language` then accepts that code.
 - Dashboard: `web/static/i18n-id.js`, strict JSON after `export default`, one entry per line. Register the new catalog
   in the `CATALOGS` map (and the locale line) of `web/static/i18n.js`. Placeholders such as `{name}` and `%s` must be
   kept exactly as in the English text.
-- Tests enforce completeness (`go test ./internal/i18n ./web`): every message used in the code needs an entry in every
+- Tests enforce completeness (`go test ./i18n ./web`): every message used in the code needs an entry in every
   shipped catalog, translations must keep their placeholders and format verbs, and the dashboard catalog may hold nothing
   the code no longer uses. Never build a sentence from translated pieces; translate whole sentences.
 

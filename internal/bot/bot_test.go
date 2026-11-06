@@ -15,11 +15,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/wisnuvb/ronda/internal/i18n"
-	"github.com/wisnuvb/ronda/internal/model"
-	"github.com/wisnuvb/ronda/internal/monitor"
-	"github.com/wisnuvb/ronda/internal/notify"
+	"github.com/wisnuvb/ronda/i18n"
 	"github.com/wisnuvb/ronda/internal/registry"
+	"github.com/wisnuvb/ronda/model"
+	"github.com/wisnuvb/ronda/monitor"
+	"github.com/wisnuvb/ronda/notify"
 )
 
 // fakeTelegram serves getUpdates like the real one (offset, offset=-1, long poll) and records replies.
@@ -166,7 +166,7 @@ func startAdmins(t *testing.T, preload func(f *fakeTelegram), admins []int64) *e
 	if err != nil {
 		t.Fatal(err)
 	}
-	mon := monitor.New(monitor.Options{Registry: reg, Checker: okChecker{}})
+	mon := monitor.New(monitor.Options{Sites: reg, Checker: okChecker{}})
 	tg := notify.NewTelegram("123:SECRET", []string{"100"})
 	tg.BaseURL = f.srv.URL
 	tg.Sleep = func(time.Duration) {}

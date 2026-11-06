@@ -8,7 +8,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/wisnuvb/ronda/internal/i18n"
+	"github.com/wisnuvb/ronda/i18n"
 )
 
 const overrideFile = "auth.json"

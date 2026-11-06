@@ -5,14 +5,14 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/wisnuvb/ronda/internal/i18n"
-	"github.com/wisnuvb/ronda/internal/model"
+	"github.com/wisnuvb/ronda/i18n"
+	"github.com/wisnuvb/ronda/model"
 )
 
 func TestMessagesFollowTheConfiguredLanguage(t *testing.T) {
 	r, _ := open(t)
 	_, err := r.Add(model.Site{URL: "ftp://example.com"})
-	var inv *InvalidError
+	var inv *model.InvalidError
 	if !errors.As(err, &inv) || !strings.Contains(err.Error(), "url must start with http:// or https://") {
 		t.Fatalf("English by default: %v", err)
 	}
@@ -23,7 +23,7 @@ func TestMessagesFollowTheConfiguredLanguage(t *testing.T) {
 	if err == nil || !strings.Contains(err.Error(), "url harus diawali http:// atau https://") {
 		t.Fatalf("Indonesian: %v", err)
 	}
-	if _, err := r.Get("nope"); !errors.Is(err, ErrNotFound) || err.Error() != "situs tidak ditemukan" {
+	if _, err := r.Get("nope"); !errors.Is(err, model.ErrNotFound) || err.Error() != "situs tidak ditemukan" {
 		t.Fatalf("ErrNotFound must translate itself and still match errors.Is: %v", err)
 	}
 	// A message with verbs keeps its arguments.

@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/wisnuvb/ronda/sitespec"
 	"html"
 	"io"
 	"log"
@@ -17,13 +18,13 @@ import (
 	"strings"
 	"time"
 
-	"github.com/wisnuvb/ronda/internal/history"
-	"github.com/wisnuvb/ronda/internal/i18n"
-	"github.com/wisnuvb/ronda/internal/model"
-	"github.com/wisnuvb/ronda/internal/monitor"
-	"github.com/wisnuvb/ronda/internal/notify"
+	"github.com/wisnuvb/ronda/history"
+	"github.com/wisnuvb/ronda/i18n"
 	"github.com/wisnuvb/ronda/internal/registry"
-	"github.com/wisnuvb/ronda/internal/report"
+	"github.com/wisnuvb/ronda/model"
+	"github.com/wisnuvb/ronda/monitor"
+	"github.com/wisnuvb/ronda/notify"
+	"github.com/wisnuvb/ronda/report"
 )
 
 type Bot struct {
@@ -315,11 +316,11 @@ func plural(n int, one, many string, rest ...any) string {
 }
 
 func failure(err error) string {
-	var inv *registry.InvalidError
+	var inv *model.InvalidError
 	if errors.As(err, &inv) {
 		return "⚠️ " + esc(err.Error())
 	}
-	if errors.Is(err, registry.ErrNotFound) {
+	if errors.Is(err, model.ErrNotFound) {
 		return i18n.T("⚠️ Site not found.")
 	}
 	log.Printf("bot: %v", err)
@@ -498,7 +499,7 @@ func (b *Bot) maintenance(args []string) string {
 	if !ok {
 		return usage
 	}
-	maxMin := int(registry.MaxMaintenance / time.Minute)
+	maxMin := int(sitespec.MaxMaintenance / time.Minute)
 	if mins > maxMin {
 		return plural(maxMin/1440, i18n.N("⚠️ Maintenance can last at most %d day."), i18n.N("⚠️ Maintenance can last at most %d days."))
 	}

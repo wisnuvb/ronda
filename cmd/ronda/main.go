@@ -11,6 +11,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"github.com/wisnuvb/ronda/sitespec"
 	"io"
 	"log"
 	"net"
@@ -24,19 +25,19 @@ import (
 	"text/tabwriter"
 	"time"
 
+	"github.com/wisnuvb/ronda/check"
+	"github.com/wisnuvb/ronda/history"
+	"github.com/wisnuvb/ronda/i18n"
 	"github.com/wisnuvb/ronda/internal/api"
 	"github.com/wisnuvb/ronda/internal/auth"
 	"github.com/wisnuvb/ronda/internal/bot"
-	"github.com/wisnuvb/ronda/internal/check"
 	"github.com/wisnuvb/ronda/internal/config"
 	"github.com/wisnuvb/ronda/internal/heartbeat"
-	"github.com/wisnuvb/ronda/internal/history"
-	"github.com/wisnuvb/ronda/internal/i18n"
-	"github.com/wisnuvb/ronda/internal/model"
-	"github.com/wisnuvb/ronda/internal/monitor"
-	"github.com/wisnuvb/ronda/internal/notify"
 	"github.com/wisnuvb/ronda/internal/registry"
-	"github.com/wisnuvb/ronda/internal/report"
+	"github.com/wisnuvb/ronda/model"
+	"github.com/wisnuvb/ronda/monitor"
+	"github.com/wisnuvb/ronda/notify"
+	"github.com/wisnuvb/ronda/report"
 	"github.com/wisnuvb/ronda/web"
 )
 
@@ -177,7 +178,7 @@ func cmdRun(args []string) error {
 		CertWarnDays:       cfg.CertWarnDays,
 		RemindAfterMin:     cfg.Notify.RemindAfterMin,
 		EventRetentionDays: cfg.EventRetentionDays,
-		Registry:           reg,
+		Sites:              reg,
 		Checker:            check.New(),
 		Notifier:           notifier,
 		Control:            &monitor.Control{Addrs: cfg.ControlAddrs},
@@ -300,12 +301,12 @@ func cmdCheck(args []string) error {
 	}
 	site := model.Site{URL: pos[0], Method: *method, Keyword: *keyword, TimeoutSec: *timeout,
 		AllowPrivate: *private, NoRedirect: *noRedirect, IntervalSec: 60, DNSType: *dnsType, DNSServer: *dnsServer}
-	if err := registry.Normalize(&site); err != nil {
+	if err := sitespec.Normalize(&site); err != nil {
 		return err
 	}
 	r := check.New().Check(context.Background(), site)
 
-	web := site.Type == registry.TypeHTTP
+	web := site.Type == sitespec.TypeHTTP
 	switch {
 	case r.OK && web:
 		fmt.Printf("OK  HTTP %d  %d ms", r.Status, r.LatencyMs)

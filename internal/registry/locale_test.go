@@ -3,7 +3,7 @@ package registry
 import (
 	"time"
 
-	"github.com/wisnuvb/ronda/internal/model"
+	"github.com/wisnuvb/ronda/model"
 )
 
 // jakarta is Western Indonesia Time (UTC+7, no daylight saving), the zone this package's tests are written

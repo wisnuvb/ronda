@@ -12,10 +12,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/wisnuvb/ronda/internal/model"
-	"github.com/wisnuvb/ronda/internal/monitor"
-	"github.com/wisnuvb/ronda/internal/notify"
 	"github.com/wisnuvb/ronda/internal/registry"
+	"github.com/wisnuvb/ronda/model"
+	"github.com/wisnuvb/ronda/monitor"
+	"github.com/wisnuvb/ronda/notify"
 )
 
 type message struct{ Chat, Text string }
@@ -104,7 +104,7 @@ func TestEachClientHearsOnlyAboutItsOwnSitesThroughTheWholePipeline(t *testing.T
 	add("Toko B", "klien-b")
 	add("Internal")
 
-	mon := monitor.New(monitor.Options{Registry: reg, Checker: chk, Notifier: queue, DataDir: t.TempDir(), StartSpread: -1})
+	mon := monitor.New(monitor.Options{Sites: reg, Checker: chk, Notifier: queue, DataDir: t.TempDir(), StartSpread: -1})
 	ctx, cancel := context.WithCancel(context.Background())
 	done := make(chan struct{})
 	go func() { mon.Run(ctx); close(done) }()

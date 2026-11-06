@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/wisnuvb/ronda/internal/i18n"
+	"github.com/wisnuvb/ronda/i18n"
 )
 
 func TestHashAndVerify(t *testing.T) {
