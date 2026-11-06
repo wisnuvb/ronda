@@ -66,6 +66,10 @@ type Options struct {
 
 	// NoAuth disables all authentication. It exists for `ronda demo` on loopback only.
 	NoAuth bool
+
+	// ReadOnly serves a public demo: only GET and HEAD are answered, and /ping/ (a GET that changes a push
+	// monitor) is refused too, so a visitor can look at everything and change nothing.
+	ReadOnly bool
 }
 
 type Server struct {
@@ -137,7 +141,7 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("GET /api/incidents", s.auth(s.incidents))
 
 	if s.opt.Static != nil {
-		mux.HandleFunc("GET /app-config.js", appConfig)
+		mux.HandleFunc("GET /app-config.js", s.appConfig)
 		mux.Handle("GET /", http.FileServerFS(s.opt.Static))
 	}
 
@@ -150,6 +154,10 @@ func (s *Server) Handler() http.Handler {
 		h.Set("Referrer-Policy", "no-referrer")
 		h.Set("Permissions-Policy", "camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()")
 		h.Set("Cross-Origin-Opener-Policy", "same-origin")
+		if s.opt.ReadOnly && (!safeMethod(r.Method) || strings.HasPrefix(r.URL.Path, "/ping/")) {
+			writeErr(w, http.StatusForbidden, i18n.T("This is a read-only demo: changes are turned off."))
+			return
+		}
 		mux.ServeHTTP(w, r)
 	})
 }
@@ -740,8 +748,12 @@ func writeErr(w http.ResponseWriter, code int, msg string) {
 // appConfig tells the dashboard which language and time zone the server runs in, so its text and its
 // clock times match the Telegram messages. It is public and holds nothing secret; it is loaded as a
 // script before the dashboard so that window.RONDA exists when the first module runs.
-func appConfig(w http.ResponseWriter, r *http.Request) {
-	b, _ := json.Marshal(map[string]string{"lang": i18n.Lang(), "timezone": model.Loc().String()})
+func (s *Server) appConfig(w http.ResponseWriter, r *http.Request) {
+	cfg := map[string]any{"lang": i18n.Lang(), "timezone": model.Loc().String()}
+	if s.opt.ReadOnly {
+		cfg["demo"] = true // the dashboard shows a banner saying so
+	}
+	b, _ := json.Marshal(cfg)
 	w.Header().Set("Content-Type", "text/javascript; charset=utf-8")
 	w.Header().Set("Cache-Control", "no-cache")
 	fmt.Fprintf(w, "window.RONDA = %s;\n", b)

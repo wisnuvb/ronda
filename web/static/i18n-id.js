@@ -2,6 +2,10 @@
 // so that web/i18n_test.go can read it: one entry per line, no comments inside, no trailing comma.
 // Placeholders such as {name} must be kept exactly as in the English text.
 export default {
+  "Demo notice": "Pemberitahuan demo",
+  "Live demo": "Demo langsung",
+  "Synthetic data, read-only. Nothing you click here is saved.": "Data sintetis, hanya baca. Tidak ada yang Anda klik di sini yang disimpan.",
+  "Get Ronda on GitHub": "Dapatkan Ronda di GitHub",
   "Current password": "Kata sandi saat ini",
   "New password": "Kata sandi baru",
   "At least {min} characters. A long phrase is stronger than a short complicated password; a password manager may fill it in.": "Minimal {min} karakter. Frasa panjang lebih kuat daripada kata sandi pendek yang rumit; pengelola kata sandi boleh mengisinya.",

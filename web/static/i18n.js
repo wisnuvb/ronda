@@ -20,6 +20,8 @@ function validZone(name) {
   try { new Intl.DateTimeFormat('en-US', { timeZone: name }); return true; } catch { return false; }
 }
 
+/** True on the public read-only demo (`ronda demo -public`): the page shows a banner saying so. */
+export const isDemo = cfg.demo === true;
 export const lang = Object.hasOwn(CATALOGS, cfg.lang) ? cfg.lang : 'en';
 /** The IANA zone the server runs in; every clock time on the page is shown in it. */
 export const timezone = validZone(cfg.timezone) ? cfg.timezone : 'UTC';

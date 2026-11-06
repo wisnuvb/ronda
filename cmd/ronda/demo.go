@@ -166,6 +166,7 @@ func cmdDemo(args []string) error {
 	static := fs.String("static", "", "read the dashboard files from this folder instead of the binary (for developing the UI)")
 	lang := fs.String("lang", i18n.Default, "language of the dashboard and messages: "+strings.Join(i18n.Supported(), " or "))
 	tz := fs.String("timezone", "UTC", "IANA time zone for clock times and days, e.g. Europe/Berlin")
+	public := fs.Bool("public", false, "read-only mode for a public demo behind a reverse proxy: visitors can look at everything and change nothing")
 	fs.Parse(args)
 	if err := i18n.SetLang(*lang); err != nil {
 		return err
@@ -312,7 +313,7 @@ func cmdDemo(args []string) error {
 	}
 	srv := &http.Server{
 		Addr: *listen,
-		Handler: api.New(api.Options{Registry: reg, Monitor: mon, History: hist, Static: staticFS, NoAuth: true, Recipients: []string{recClientA, recTeam},
+		Handler: api.New(api.Options{Registry: reg, Monitor: mon, History: hist, Static: staticFS, NoAuth: true, ReadOnly: *public, Recipients: []string{recClientA, recTeam},
 			StatusPage: api.StatusPageOptions{Enabled: true, Title: i18n.T("Example service status"), Description: i18n.T("The latest news about our services.")}}).Handler(),
 		ReadHeaderTimeout: 10 * time.Second,
 	}
@@ -324,7 +325,11 @@ func cmdDemo(args []string) error {
 	go demoJobs(ctx, reg, mon)
 	go func() { <-ctx.Done(); _ = srv.Close() }()
 
-	log.Printf("ronda demo: synthetic data, no login, at http://%s (Ctrl+C to stop), language %s, timezone %s", *listen, i18n.Lang(), model.Loc())
+	mode := "no login"
+	if *public {
+		mode = "read-only, no login"
+	}
+	log.Printf("ronda demo: synthetic data, %s, at http://%s (Ctrl+C to stop), language %s, timezone %s", mode, *listen, i18n.Lang(), model.Loc())
 	if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		return err
 	}

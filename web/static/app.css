@@ -74,6 +74,12 @@ main:focus, h1:focus { outline: none; }
 .wrap { max-width: 1200px; margin: 0 auto; padding: 0 16px; }
 main { padding-top: 20px; padding-bottom: 48px; }
 
+/* ---- public demo banner: not sticky, so it never covers a focused control ---- */
+.demo-banner { background: var(--warn-bg); color: var(--warn); border-bottom: 1px solid var(--border); font-size: 0.875rem; }
+.demo-banner-in { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 2px 16px; padding-top: 6px; padding-bottom: 6px; }
+.demo-banner p { margin: 0; }
+.demo-banner-link { display: inline-flex; align-items: center; min-height: 28px; color: inherit; font-weight: 650; }
+
 /* ---- top bar ---- */
 .topbar { position: sticky; top: 0; z-index: 20; background: var(--surface); border-bottom: 1px solid var(--border); }
 .topbar-in { display: flex; align-items: center; gap: 20px; min-height: 56px; }

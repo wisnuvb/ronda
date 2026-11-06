@@ -46,7 +46,7 @@ const usage = `ronda %s: watch websites from the outside and tell you on Telegra
 
 Usage:
   ronda run [-config /etc/ronda/config.json]    run the monitor + dashboard + API
-  ronda demo [-listen 127.0.0.1:9191] [-lang en|id] [-timezone UTC]
+  ronda demo [-listen 127.0.0.1:9191] [-lang en|id] [-timezone UTC] [-public]
                                                    dashboard with synthetic data, no login (to try it out)
   ronda hash-password                             turn a password (read from stdin) into a hash for auth.password_hash
   ronda check [flags] URL                         check one URL now (nothing is saved)

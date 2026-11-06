@@ -3,7 +3,7 @@ import { api, auth, setUnauthorizedHandler } from './api.js';
 import { h, clear } from './dom.js';
 import { icon } from './icons.js';
 import { toast } from './ui.js';
-import { t } from './i18n.js';
+import { t, isDemo } from './i18n.js';
 import { openPasswordForm } from './account.js';
 import * as login from './login.js';
 import * as list from './list.js';
@@ -16,6 +16,7 @@ const themeBtn = document.getElementById('theme-toggle');
 const logoutBtn = document.getElementById('logout');
 const accountBtn = document.getElementById('account');
 const statusLink = document.getElementById('status-link');
+if (isDemo) document.getElementById('demo-banner').hidden = false;
 let current = null;
 
 // ---- theme ----
